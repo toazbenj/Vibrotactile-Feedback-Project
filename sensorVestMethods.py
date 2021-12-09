@@ -18,7 +18,7 @@ haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
 
 def getDevices():
     ''' Search for docked devices, make list, assign names and orientation,
-    return devices'''
+    display battery levels, return devices'''
 
     device_list = ts_api.getComPorts()
     com_port, friendly_name, device_type = device_list[0]
@@ -31,9 +31,23 @@ def getDevices():
 
     key = input('Select student (1,3,4)>>')
     device2 = device_dict[int(key)]
+    
+    percent1 = device1.getBatteryPercentRemaining()
+    percent2 = device2.getBatteryPercentRemaining()
+    
+    print('Teacher battery at {}%'.format(percent1))
+    print('Student battery at {}%'.format(percent2))
 
     device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
     device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+
+    while True:
+        key = input('Press T to tare>>')    
+        if key.lower() == 't':
+            break
+    
+    device1.tareWithCurrentOrientation()
+    device2.tareWithCurrentOrientation()
 
     return device1, device2, dng_device
 

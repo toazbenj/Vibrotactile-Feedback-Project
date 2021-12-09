@@ -27,10 +27,10 @@ Follow Me Algorthm
         Close devices
         Close file
 
-    Except
+    Except KeyboardInterrupt
         Close devices
-        Close file
         Timestamp
+        Close file
 
 Created on Thu Nov 18 11:42:07 2021
 @author: Ben Toaz
@@ -41,7 +41,7 @@ import sensorVestMethods as sv
 from time import sleep
 from time import perf_counter
 
-# If any errors or crashes, sensors and files will still get closed
+# If stopped, sensors and files will still get closed
 try:
     # Open file for recoding data
     file = open('sessionScratchWork.txt', 'w')
@@ -60,13 +60,12 @@ try:
 
     # Register and Tare Sensors
     teacher, student, dong = sv.getDevices()
-    teacher.tareWithCurrentOrientation()
-    student.tareWithCurrentOrientation()
 
     # Time recording values
     time = 0
     start = perf_counter()
     buzzes = 0
+    bedtime = 1.5
 
     # Main Loop, 1 minute run time
     while time - start < 60:
@@ -146,7 +145,6 @@ try:
                 intensity = 1
 
             sv.play(index=index, intensity=intensity, duration=0.5)
-            bedtime = 1.5
             sleep(bedtime)
             buzzes += 1
 
@@ -164,8 +162,8 @@ try:
     sv.close([teacher, student, dong])
     file.close()
 
-except:
-    # Will execute no matter what
+except KeyboardInterrupt:
+    # Will execute if stopped manually
     sv.close([teacher, student, dong])
-    file.close()
     file.write('\n'+str(time-start))
+    file.close()
