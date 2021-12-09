@@ -26,6 +26,8 @@ def getDevices():
 
     device_dict = {1: dng_device[0], 3: dng_device[1], 4: dng_device[2]}
 
+    sensor_lst = [1,3,4]    
+
     key = input('Select teacher (1,3,4)>>')
     device1 = device_dict[int(key)]
 
@@ -114,3 +116,27 @@ def close(device_lst):
     'Close all devices so next program can run'
     for d in device_lst:
         d.close()
+        
+
+def writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle):
+    file.write(time,end='')
+    file.write('{},{},{}'.format(
+      round(tec_tup[0], 3), round(tec_tup[1], 3), round(tec_tup[2], 3)),end=',')
+    file.write(,end=',')
+    file.write(,end='')
+    
+    
+    
+    # Timestamp, teacher, student, position error
+    file.write('\n'+str(time-start))
+    file.write()
+    file.write('\n{},{},{}'.format(
+      round(stu_tup[0], 3), round(stu_tup[1], 3), round(stu_tup[2], 3)))
+    file.write('\n{},{},{}'.format(
+      round(diff_tup[0], 3), round(diff_tup[1], 3), round(diff_tup[2], 3)))
+    
+    # Record intensity and direction (angle)
+    file.write('\n{},{}'.format(
+        round(intensity, 3), round(angle_dict[index], 2)))
+
+    file.write('\n{},{}'.format(0, 0))

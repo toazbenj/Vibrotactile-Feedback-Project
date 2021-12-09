@@ -43,9 +43,7 @@ from time import perf_counter
 
 # If stopped, sensors and files will still get closed
 try:
-    # Open file for recoding data
-    file = open('sessionScratchWork.txt', 'w')
-
+    
     # Dict of file names matched with keystrokes
     haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
                    's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
@@ -67,6 +65,11 @@ try:
     buzzes = 0
     bedtime = 1.5
 
+    header = 'Teacher-x|Teacher-y|Teacher-z|Student-x|Student-y|Student-z|Error-x|Error-y|Error-z|Intensity|Angle'
+    file = open('sessionScratchWork.txt', 'w')
+    file.write(header)
+    
+    
     # Main Loop, 1 minute run time
     while time - start < 60:
 
@@ -80,15 +83,6 @@ try:
         print('Position Error {}, {}, {}'.format(
             round(
                 diff_tup[0], 3), round(diff_tup[1], 3), round(diff_tup[2], 3)))
-
-        # Timestamp, teacher, student, position error
-        file.write('\n'+str(time-start))
-        file.write('\n\n{},{},{}'.format(
-          round(tec_tup[0], 3), round(tec_tup[1], 3), round(tec_tup[2], 3)))
-        file.write('\n{},{},{}'.format(
-          round(stu_tup[0], 3), round(stu_tup[1], 3), round(stu_tup[2], 3)))
-        file.write('\n{},{},{}'.format(
-          round(diff_tup[0], 3), round(diff_tup[1], 3), round(diff_tup[2], 3)))
 
         # Movement Cases
         tolerance = pi/24
@@ -148,13 +142,10 @@ try:
             sleep(bedtime)
             buzzes += 1
 
-            # Record intensity and direction (angle)
-            file.write('\n{},{}'.format(
-                round(intensity, 3), round(angle_dict[index], 2)))
-
         else:
             # No haptics => Intensity=0, Angle=0
-            file.write('\n{},{}'.format(0, 0))
+            angle = 0 
+            intensity = 0
 
         time = perf_counter()+bedtime*buzzes
         time = perf_counter()
@@ -165,5 +156,4 @@ try:
 except KeyboardInterrupt:
     # Will execute if stopped manually
     sv.close([teacher, student, dong])
-    file.write('\n'+str(time-start))
     file.close()
