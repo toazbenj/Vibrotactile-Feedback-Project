@@ -40,6 +40,7 @@ from math import pi
 import sensorVestMethods as sv
 from time import sleep
 from time import perf_counter
+import csv
 
 # If stopped, sensors and files will still get closed
 try:
@@ -64,14 +65,19 @@ try:
     start = perf_counter()
     buzzes = 0
     bedtime = 1.5
-
-    header = 'Teacher-x|Teacher-y|Teacher-z|Student-x|Student-y|Student-z|Error-x|Error-y|Error-z|Intensity|Angle'
-    file = open('sessionScratchWork.txt', 'w')
-    file.write(header)
     
+    file ='csvTest.csv'
+    
+    header = ['Time','Teacher-x','Teacher-y','Teacher-z','Student-x','Student-y',
+              'Student-z','Difference-x','Difference-y','Difference-z','Intensity','Angle']
+    
+    # file = open('sessionScratchWork.txt', 'w')
+    with open(file, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(header)
     
     # Main Loop, 1 minute run time
-    while time - start < 60:
+    while time < 60:
 
         # Get batch of position data as (x,y,z) tuple, calculate difference
         tec_tup = teacher.getStreamingBatch()
@@ -139,6 +145,7 @@ try:
                 intensity = 1
 
             sv.play(index=index, intensity=intensity, duration=0.5)
+            angle = angle_dict[index]
             sleep(bedtime)
             buzzes += 1
 
@@ -147,13 +154,11 @@ try:
             angle = 0 
             intensity = 0
 
-        time = perf_counter()+bedtime*buzzes
-        time = perf_counter()
+        time = perf_counter()+bedtime*buzzes-start
+        sv.writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle)
 
     sv.close([teacher, student, dong])
-    file.close()
 
 except KeyboardInterrupt:
     # Will execute if stopped manually
     sv.close([teacher, student, dong])
-    file.close()

@@ -8,6 +8,7 @@ Created on Thu Nov 18 10:58:51 2021
 
 from bhaptics import better_haptic_player as player
 import threespace_api as ts_api
+import csv
 
 # Dict of file names matched with keystrokes
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
@@ -119,24 +120,12 @@ def close(device_lst):
         
 
 def writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle):
-    file.write(time,end='')
-    file.write('{},{},{}'.format(
-      round(tec_tup[0], 3), round(tec_tup[1], 3), round(tec_tup[2], 3)),end=',')
-    file.write(,end=',')
-    file.write(,end='')
+    with open(file, 'a') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        
+        csvwriter.writerow([str(round(time,3)),
+            str(round(tec_tup[0], 3)), str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)),
+            str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), str(round(stu_tup[2], 3)),
+            str(round(diff_tup[0], 3)), str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
+            str(round(intensity, 3)), str(round(angle, 2))])    
     
-    
-    
-    # Timestamp, teacher, student, position error
-    file.write('\n'+str(time-start))
-    file.write()
-    file.write('\n{},{},{}'.format(
-      round(stu_tup[0], 3), round(stu_tup[1], 3), round(stu_tup[2], 3)))
-    file.write('\n{},{},{}'.format(
-      round(diff_tup[0], 3), round(diff_tup[1], 3), round(diff_tup[2], 3)))
-    
-    # Record intensity and direction (angle)
-    file.write('\n{},{}'.format(
-        round(intensity, 3), round(angle_dict[index], 2)))
-
-    file.write('\n{},{}'.format(0, 0))
