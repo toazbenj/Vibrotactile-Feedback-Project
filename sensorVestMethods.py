@@ -11,11 +11,13 @@ import threespace_api as ts_api
 import csv
 
 # Dict of file names matched with keystrokes
-haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-               's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
-               'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
-               'sd': 'BackRight'}
+# haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
+#                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
+#                 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
+#                 'sd': 'BackRight'}
 
+haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
+               's': 'MoveBack','g': 'Gap'}
 
 def getDevices():
     ''' Search for docked devices, make list, assign names and orientation,
@@ -81,11 +83,12 @@ def play(index, intensity=1, duration=0.5, iteration=3):
 
 
 def testPos(pos_tup1, pos_tup2, tolerance=0):
-    '''Takes position tuple and margin of error tolerance, if position in each
-    coordinate +/- toleance is less than 0.5 from 0, return true, else false'''
-
+    
     # Currently not in use
 
+    '''Takes position tuple and margin of error tolerance, if position in each
+    coordinate +/- toleance is less than 0.5 from 0, return true, else false'''
+    
     # Default values
     x_test_bool = False
     # y_test_bool = False
@@ -114,13 +117,14 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
 
 
 def close(device_lst):
-    'Close all devices so next program can run'
+    '''Close all devices so next program can run'''
     for d in device_lst:
         d.close()
         
 
 def writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle):
-    with open(file, 'a') as csvfile:
+    '''Take timestamp, position data, haptics data, write to csv file'''
+    with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         
         csvwriter.writerow([str(round(time,3)),
