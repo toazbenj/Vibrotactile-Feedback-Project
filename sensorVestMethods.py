@@ -2,6 +2,32 @@
 """
 Sensor and Vest Methods
 
+    getDevices
+        Search for docked devices, make list, assign names and orientation,
+        display battery levels, return devices
+        
+    register
+        Turn on haptic player, register all haptic files in dictionary
+        (letters = keys, names = values)
+        
+     play
+        Takes keyboard input, intensity value; selects haptic file from dict;
+        plays file with adjusted intensity, options for duration and rotation
+        
+    testPos
+        Takes position tuple and margin of error tolerance, if position in each
+        coordinate +/- toleance is less than 0.5 from 0, return true, else false
+        
+    play
+        Takes keyboard input, intensity value; selects haptic file from dict;
+        plays file with adjusted intensity, options for duration and rotation
+        
+    close
+        Close all devices so next program can run
+    
+    writeData
+        Take timestamp, position data, haptics data, write to csv file
+    
 Created on Thu Nov 18 10:58:51 2021
 @author: Ben Toaz
 """
@@ -10,14 +36,14 @@ from bhaptics import better_haptic_player as player
 import threespace_api as ts_api
 import csv
 
-# Dict of file names matched with keystrokes
+# Dict of file names matched with keystrokes, all files and then only cardinal directions
 # haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
 #                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
 #                 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
 #                 'sd': 'BackRight'}
 
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-               's': 'MoveBack','g': 'Gap'}
+               's': 'MoveBack'}
 
 def getDevices():
     ''' Search for docked devices, make list, assign names and orientation,
@@ -28,8 +54,6 @@ def getDevices():
     dng_device = ts_api.TSDongle(com_port=com_port)
 
     device_dict = {1: dng_device[0], 3: dng_device[1], 4: dng_device[2]}
-
-    sensor_lst = [1,3,4]    
 
     key = input('Select teacher (1,3,4)>>')
     device1 = device_dict[int(key)]
@@ -73,7 +97,7 @@ def play(index, intensity=1, duration=0.5, iteration=3):
 
     # Find indicated motion
     if index in haptic_dict:
-        print('\n'+haptic_dict[index])
+        print('\n'+haptic_dict[index]+'\n')
 
         # Adjust haptics in real time
         player.submit_registered_with_option(
@@ -127,9 +151,10 @@ def writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle):
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         
-        csvwriter.writerow([str(round(time,3)),
-            str(round(tec_tup[0], 3)), str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)),
-            str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), str(round(stu_tup[2], 3)),
-            str(round(diff_tup[0], 3)), str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
+        csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
+            str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
+            str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
+            str(round(stu_tup[2], 3)), str(round(diff_tup[0], 3)), 
+            str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
             str(round(intensity, 3)), str(round(angle, 2))])    
     

@@ -3,7 +3,6 @@
 Follow Me Algorthm
 
     Try
-        Begin Writing to data file
         Make haptic dictionaries
         Register haptics
         Register Sensors
@@ -13,24 +12,22 @@ Follow Me Algorthm
 
             Get teacher and student position data
             Calculate difference
-            Display data
-            Record data
             Select haptics index
 
             If tolerance exceeded
                 Find direction of max difference
                 Modulate intensity
-                Play haptics
-                Sleep
+                Play haptics with given interval
                 Record intensity and direction
-
+            
+            Display data at specified interval
+            Record data
+            
         Close devices
-        Close file
 
     Except KeyboardInterrupt
         Close devices
-        Timestamp
-        Close file
+
 
 Created on Thu Nov 18 11:42:07 2021
 @author: Ben Toaz
@@ -38,7 +35,6 @@ Created on Thu Nov 18 11:42:07 2021
 
 from math import pi
 import sensorVestMethods as sv
-from time import sleep
 from time import perf_counter
 import csv
 
@@ -63,21 +59,19 @@ try:
     # Time recording values
     time = 0
     start = perf_counter()
-    buzzes = 0
-    bedtime = 1.5
     reps = 0
     commandTime = 0
-    file ='csvTest.csv'
+    file ='demo.csv'
     
     header = ['Time','Teacher-x','Teacher-y','Teacher-z','Student-x','Student-y',
               'Student-z','Difference-x','Difference-y','Difference-z','Intensity','Angle']
     
-    # file = open('sessionScratchWork.txt', 'w')
+    # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(header)
     
-    # Main Loop, 1 minute run time
+    # Main Loop, 2 minute run time
     while time < 120:
 
         # Get batch of position data as (x,y,z) tuple, calculate difference
@@ -87,10 +81,10 @@ try:
                     stu_tup[2]-tec_tup[2])
 
         # Movement Cases
-        tolerance = pi/24
+        tolerance = pi/48
         index = ''
 
-        # # Mixed Conditions
+        # # Mixed Conditions => Still Need Refinement
         # # fix ForwardLeft and ForwardRight, switched?
 
         # # Forward Left (-y difference and -z differnce)
@@ -110,20 +104,20 @@ try:
         #     index = 'sa'
 
         # Pure Directions
+        # Forward (-z differnce)
+        if diff_tup[2] <= -tolerance and abs(diff_tup[1]) < abs(diff_tup[2]):
+            index = 'w'
+        
         # Left (-y difference)
-        if diff_tup[1] <= -tolerance:
+        elif diff_tup[1] <= -tolerance and abs(diff_tup[1]) > abs(diff_tup[2]):
             index = 'a'
 
-        # Forward (-z differnce)
-        elif diff_tup[2] <= -tolerance:
-            index = 'w'
-
         # Right (+y difference)
-        elif diff_tup[1] >= tolerance:
+        elif diff_tup[1] >= tolerance and abs(diff_tup[1]) > abs(diff_tup[2]):
             index = 'd'
 
         # Back (+z difference)
-        elif diff_tup[2] >= tolerance:
+        elif diff_tup[2] >= tolerance and abs(diff_tup[1]) < abs(diff_tup[2]):
             index = 's'
 
         # Play haptics
@@ -132,18 +126,18 @@ try:
             # Decide which axis to check based on bigger difference
             if abs(diff_tup[1]) > abs(diff_tup[2]):
                 check_coord = 1
-            elif abs(diff_tup[1]) < abs(diff_tup[2]):
+            else:
                 check_coord = 2
 
             # Modulate intensity based on assumed max movement angle
-            intensity = abs(diff_tup[check_coord])/(pi/4)
+            intensity = abs(diff_tup[check_coord])/(pi/8)
             # Can't exceed 1
             if intensity > 1:
                 intensity = 1
             
             # Measures time since last buzz => maintains gap
             time  =  perf_counter()-start
-            if time - commandTime > 2:
+            if time - commandTime > 0.5:
                 commandTime = perf_counter()-start
                 sv.play(index=index, intensity=intensity, duration=0.5)
             angle = angle_dict[index]
@@ -154,12 +148,8 @@ try:
             intensity = 0
         
         # Display Data
-        if reps % 5 == 0 and index == '':
-            print('Position Error {}, {}, {}'.format(
-                round(
-                    diff_tup[0], 3), round(diff_tup[1], 3), round(diff_tup[2], 3)))
-        elif index !='':
-            print('Position Error {}, {}, {}'.format(
+        if reps % 5 == 0:
+            print('Error {}, {}, {}'.format(
                 round(
                     diff_tup[0], 3), round(diff_tup[1], 3), round(diff_tup[2], 3)))
         
@@ -172,3 +162,6 @@ try:
 except KeyboardInterrupt:
     # Will execute if stopped manually
     sv.close([teacher, student, dong])
+except  NameError:
+    # Will execute if setup not completed
+    sv.close([dong])
