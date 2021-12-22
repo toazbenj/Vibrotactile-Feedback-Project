@@ -1,5 +1,5 @@
 from time import sleep
-from bhaptics import better_haptic_player as player
+import better_haptic_player as player
 
 import keyboard
 
@@ -15,14 +15,14 @@ interval = 0.5
 durationMillis = 100
 
 # Test each motor
-# for i in range(20):
-#     print(i, "back")
-#     player.submit_dot("backFrame", "VestBack", [{"index": i, "intensity": 100}], durationMillis)
-#     sleep(interval)
+for i in range(20):
+    print(i, "back")
+    player.submit_dot("backFrame", "VestBack", [{"index": i, "intensity": 100}], durationMillis)
+    sleep(interval)
 
-#     print(i, "front")
-#     player.submit_dot("frontFrame", "VestFront", [{"index": i, "intensity": 100}], durationMillis)
-#     sleep(interval)
+    print(i, "front")
+    player.submit_dot("frontFrame", "VestFront", [{"index": i, "intensity": 100}], durationMillis)
+    sleep(interval)
 
 # 3 Feedback options
 def play(index):
@@ -43,9 +43,9 @@ def play(index):
 
 def run():
     
-    # sleep(0.5)
-    # play(1)
-    # sleep(0.5)
+    sleep(0.5)
+    play(1)
+    sleep(0.5)
     
     # User input decision tree
     print("Press Q to quit")

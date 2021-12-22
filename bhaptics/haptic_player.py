@@ -1,36 +1,36 @@
 import json
 from websocket import create_connection
 
-# # send individual point for 1 seconds
-# dotFrame = {
-#     "Position": "Left",
-#     "DotPoints": [{
-#         "Index": 0,
-#         "Intensity": 100
-#     }, {
-#         "Index": 3,
-#         "Intensity": 50
-#     }],
-#     "DurationMillis": 1000
-# }
-# player.submit("dotPoint", dotFrame)
-# sleep(2)
-#
-# pathFrame = {
-#     "Position": "VestFront",
-#     "PathPoints": [{
-#         "X": "0.5",
-#         "Y": "0.5",
-#         "Intensity": 100
-#     }, {
-#         "X": "0.3",
-#         "Y": "0.3",
-#         "Intensity": 50
-#     }],
-#     "DurationMillis": 1000
-# }
-# player.submit("pathPoint", pathFrame)
-# sleep(2)
+# send individual point for 1 seconds
+dotFrame = {
+    "Position": "Left",
+    "DotPoints": [{
+        "Index": 0,
+        "Intensity": 100
+    }, {
+        "Index": 3,
+        "Intensity": 50
+    }],
+    "DurationMillis": 1000
+}
+player.submit("dotPoint", dotFrame)
+sleep(2)
+
+pathFrame = {
+    "Position": "VestFront",
+    "PathPoints": [{
+        "X": "0.5",
+        "Y": "0.5",
+        "Intensity": 100
+    }, {
+        "X": "0.3",
+        "Y": "0.3",
+        "Intensity": 50
+    }],
+    "DurationMillis": 1000
+}
+player.submit("pathPoint", pathFrame)
+sleep(2)
 
 
 class HapticPlayer:
