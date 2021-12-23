@@ -59,11 +59,11 @@ _wireless_retries = 5
 if sys.version_info >= (3, 0):
     def makeWriteArray(startbyte, index_byte=None, command_byte=None, data=None):
         rtn_array = bytearray((startbyte,))
-        if index_byte is not None:
+        if index_byte != None:
             rtn_array.append(index_byte)
-        if command_byte is not None:
+        if command_byte != None:
             rtn_array.append(command_byte)
-        if data is not None:
+        if data != None:
             rtn_array += data
         rtn_array.append((sum(rtn_array) - startbyte) % 256)  # checksum
         _hexDump(rtn_array)
@@ -71,7 +71,7 @@ if sys.version_info >= (3, 0):
 else:
     def makeWriteArray(startbyte, index_byte=None, command_byte=None, data=None):
         rtn_array = chr(startbyte)
-        if index_byte is not None:
+        if index_byte != None:
             rtn_array += chr(index_byte)
         if command_byte is not None:
             rtn_array += chr(command_byte)
@@ -653,7 +653,7 @@ class _TSBase(object):
         queue_packet = (uid, cmd_byte)
         timeout_time = 0.5 + (len(self.read_queue) * 0.150)  # timeout increases as queue gets larger
         self.read_queue.append(queue_packet)
-        start_time = time.clock() + timeout_time
+        start_time = time.perf_counter() + timeout_time
         read_data = None
         while (timeout_time > 0):
             self.read_lock.wait(timeout_time)
@@ -661,7 +661,7 @@ class _TSBase(object):
 
             if read_data is not None:
                 break
-            timeout_time = start_time - time.clock()
+            timeout_time = start_time - time.perf_counter()
             # _print("Still waiting {0} {1} {2}".format(uid, command, timeout_time))
         else:
             # _print("Operation timed out!!!!")
@@ -988,7 +988,7 @@ class _TSSensor(_TSBase):
         if self.stream_slot_cmds is None:
             self.getStreamingSlots()
         for slot_cmd in self.stream_slot_cmds:
-            if slot_cmd is not 'null':
+            if slot_cmd != 'null':
                 out_struct = self.command_dict[slot_cmd][2]
                 stream_string += out_struct[1:]  # stripping the >
         self.stream_parse = struct.Struct(stream_string)
@@ -1039,7 +1039,7 @@ class _TSSensor(_TSBase):
                 header_data = self.header_parse.unpack(header_bytes)
                 header_list = padProtocolHeader71(header_data)
             elif self.timestamp_mode == TSS_TIMESTAMP_SYSTEM:
-                sys_timestamp = time.clock()  # time packet was parsed it might been in the system buffer a few ms
+                sys_timestamp = time.perf_counter()  # time packet was parsed it might been in the system buffer a few ms
                 sys_timestamp *= 1000000
                 header_data = self.header_parse.unpack(header_bytes)
                 header_list = padProtocolHeader69(header_data, sys_timestamp)
@@ -1048,7 +1048,7 @@ class _TSSensor(_TSBase):
                 header_list = padProtocolHeader69(header_data, None)
             fail_byte, timestamp, cmd_echo, ck_sum, rtn_log_id, sn, data_size = header_list
             output_data = _serial_port.read(data_size)
-            if cmd_echo is 0xff:
+            if cmd_echo == 0xff:
                 if data_size:
                     self._parseStreamData(timestamp, output_data)
                 return
@@ -2961,7 +2961,7 @@ class TSDongle(_TSBase):
         queue_packet = (uid, cmd_byte)
         timeout_time = 0.5 + (len(self.read_queue) * 0.150)  # timeout increases as queue gets larger
         self.read_queue.append(queue_packet)
-        start_time = time.clock() + timeout_time
+        start_time = time.perf_counter() + timeout_time
         read_data = None
         while (timeout_time > 0):
             self.read_lock.wait(timeout_time)
@@ -2969,7 +2969,7 @@ class TSDongle(_TSBase):
 
             if read_data is not None:
                 break
-            timeout_time = start_time - time.clock()
+            timeout_time = start_time - time.perf_counter()
             # _print("Still waiting {0} {1} {2} {3}".format(uid, command,logical_id, timeout_time))
         else:
             # _print("Operation timed out!!!!")
@@ -3087,7 +3087,7 @@ class TSDongle(_TSBase):
                 header_data = self.header_parse.unpack(header_bytes)
                 header_list = padProtocolHeader87(header_data)
             elif self.timestamp_mode == TSS_TIMESTAMP_SYSTEM:
-                sys_timestamp = time.clock()  # time packet was parsed it might been in the system buffer a few ms
+                sys_timestamp = time.perf_counter()  # time packet was parsed it might been in the system buffer a few ms
                 sys_timestamp *= 1000000
                 header_data = self.header_parse.unpack(header_bytes)
                 header_list = padProtocolHeader85(header_data, sys_timestamp)
@@ -3098,7 +3098,7 @@ class TSDongle(_TSBase):
             # _print("!!!!fail_byte={0}, cmd_echo={1}, rtn_log_id={2}, data_size={3}".format(fail_byte, cmd_echo, rtn_log_id, data_size))
             output_data = _serial_port.read(data_size)
 
-            if cmd_echo is 0xff:
+            if cmd_echo == 0xff:
                 if data_size:
                     self[rtn_log_id]._parseStreamData(timestamp, output_data)
                 return

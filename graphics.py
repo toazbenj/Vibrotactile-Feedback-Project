@@ -160,7 +160,7 @@ __version__ = "5.0"
 #     Added ability to set text atttributes.
 #     Added Entry boxes.
 
-import time, os, sys
+import time, os
 
 build_exe_options = {"packages": ["files", "tools"], "include_files": ["tcl86t.dll", "tk86t.dll"]}  
 
@@ -627,7 +627,6 @@ class Oval(_BBox):
     def __repr__(self):
         return "Oval({}, {})".format(str(self.p1), str(self.p2))
 
-        
     def clone(self):
         other = Oval(self.p1, self.p2)
         other.config = self.config.copy()
