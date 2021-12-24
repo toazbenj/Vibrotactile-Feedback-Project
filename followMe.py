@@ -61,7 +61,8 @@ try:
     start = perf_counter()
     reps = 0
     commandTime = 0
-    file ='demo.csv'
+    file ='run2.csv'
+    
     
     header = ['Time','Teacher-x','Teacher-y','Teacher-z','Student-x','Student-y',
               'Student-z','Difference-x','Difference-y','Difference-z','Intensity','Angle']
@@ -71,7 +72,7 @@ try:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(header)
     
-    # Main Loop, 2 minute run time
+    # Main Loop, 1 minute run time
     while time < 120:
 
         # Get batch of position data as (x,y,z) tuple, calculate difference
@@ -81,7 +82,7 @@ try:
                     stu_tup[2]-tec_tup[2])
 
         # Movement Cases
-        tolerance = pi/48
+        tolerance = pi/24
         index = ''
 
         # # Mixed Conditions => Still Need Refinement
