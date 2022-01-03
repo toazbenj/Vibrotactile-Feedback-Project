@@ -35,15 +35,18 @@ Created on Thu Nov 18 10:58:51 2021
 from bhaptics import better_haptic_player as player
 import threespace_api as ts_api
 import csv
+from math import pi
+from time import perf_counter
 
 # Dict of file names matched with keystrokes, all files and then only cardinal directions
-# haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-#                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
-#                 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
-#                 'sd': 'BackRight'}
-
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-               's': 'MoveBack'}
+                's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
+                'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
+                'sd': 'BackRight'}
+
+# Numerical representation of direction for records
+angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,'sa': 5*pi/4, 
+              's': 3*pi/2, 'sd': 7*pi/4}
 
 def getDevices():
     ''' Search for docked devices, make list, assign names and orientation,
@@ -158,3 +161,79 @@ def writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle):
             str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
             str(round(intensity, 3)), str(round(angle, 2))])    
     
+
+def checkTolerance(check_tup, tolerance):
+    if check_tup[1] > tolerance or check_tup[1] < -tolerance\
+        or check_tup[2] > tolerance or check_tup[2] < -tolerance:
+        
+        return True 
+    else:
+        return False
+    
+
+def getIndex(diff_tup, tolerance):
+    index = ''
+    
+    # Forward Left (-y difference and -z differnce)
+    if diff_tup[1] <= -tolerance and diff_tup[2] <= -tolerance:
+        index = 'wa'
+
+    # Forward Right (-z differnce and +y difference)
+    elif diff_tup[2] <= -tolerance and diff_tup[1] >= tolerance:
+        index = 'wd'
+
+    # Back Right (+y difference +z difference)
+    elif diff_tup[1] >= tolerance and diff_tup[2] >= tolerance:
+        index = 'sd'
+
+    # Back Left (+z difference and -y difference)
+    elif diff_tup[2] >= tolerance and diff_tup[1] <= -tolerance:
+        index = 'sa'
+        
+    # Forward (-z differnce)
+    elif diff_tup[2] <= -tolerance and abs(diff_tup[1]) < abs(diff_tup[2]):
+        index = 'w'
+    
+    # Left (-y difference)
+    elif diff_tup[1] <= -tolerance and abs(diff_tup[1]) > abs(diff_tup[2]):
+        index = 'a'
+
+    # Right (+y difference)
+    elif diff_tup[1] >= tolerance and abs(diff_tup[1]) > abs(diff_tup[2]):
+        index = 'd'
+
+    # Back (+z difference)
+    elif diff_tup[2] >= tolerance and abs(diff_tup[1]) < abs(diff_tup[2]):
+        index = 's'
+        
+    return index
+
+
+def advancedPlay(index, diff_tup, start, commandTime):
+    if index in haptic_dict:
+        
+        # Decide which axis to check based on bigger difference
+        if abs(diff_tup[1]) > abs(diff_tup[2]):
+            check_coord = 1
+        else:
+            check_coord = 2
+
+        # Modulate intensity based on assumed max movement angle
+        intensity = abs(diff_tup[check_coord])/(pi/2)
+        # Can't exceed 1
+        if intensity > 1:
+            intensity = 1
+        
+        # Measures time since last buzz => maintains gap
+        time  =  perf_counter()-start
+        if time - commandTime > 0.5:
+            commandTime = perf_counter()-start
+            play(index=index, intensity=intensity, duration=0.5)
+        angle = angle_dict[index]
+
+    else:
+        # No haptics => Intensity=0, Angle=0
+        angle = 0 
+        intensity = 0
+        
+    return angle, intensity, commandTime
