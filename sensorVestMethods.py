@@ -228,7 +228,7 @@ def advancedPlay(index, diff_tup, start, commandTime):
         time  =  perf_counter()-start
         if time - commandTime > 0.5:
             commandTime = perf_counter()-start
-            play(index=index, intensity=intensity, duration=0.5)
+            play(index=index, intensity=intensity, duration=0.5,iteration=3)
         angle = angle_dict[index]
 
     else:

@@ -52,7 +52,6 @@ try:
     reps = 0
     commandTime = 0
     tolerance = pi/12
-    duration = 0.5
     file ='run2.csv'
     
     header = ['Time','Teacher-x','Teacher-y','Teacher-z','Student-x','Student-y',

@@ -19,6 +19,7 @@ angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,'sa': 5*pi
 
 
 try:
+    # Make Window
     x_bounds = 1000 
     y_bounds = 500
     win = g.GraphWin(width = x_bounds, height = y_bounds)
@@ -26,6 +27,7 @@ try:
     # Register and Tare Sensors
     teacher, student, dong = sv.getDevices()
     
+    # Make Ball
     pt = g.Point(x_bounds/2, y_bounds/2)
     
     ball = g.Circle(pt, 25)
@@ -64,35 +66,36 @@ try:
             
             # Select haptics direction, play, return values for writing
             index = sv.getIndex(diff_tup,tolerance)
-            # angle, intensity, commandTime = sv.advancedPlay(index, diff_tup,
-            #                                                 start, commandTime)
-                
             
-            if index != '':
+            # Play haptics, return values for recording
+            angle, intensity, commandTime = sv.advancedPlay(index, diff_tup,
+                                                            start, commandTime)
+            # Advanced play
+            # if index != '':
         
-                # Decide which axis to check based on bigger difference
-                if abs(diff_tup[1]) > abs(diff_tup[2]):
-                    check_coord = 1
-                else:
-                    check_coord = 2
+            #     # Decide which axis to check based on bigger difference
+            #     if abs(diff_tup[1]) > abs(diff_tup[2]):
+            #         check_coord = 1
+            #     else:
+            #         check_coord = 2
         
-                # Modulate intensity based on assumed max movement angle
-                intensity = abs(diff_tup[check_coord])/(pi/8)
-                # Can't exceed 1
-                if intensity > 1:
-                    intensity = 1
+            #     # Modulate intensity based on assumed max movement angle
+            #     intensity = abs(diff_tup[check_coord])/(pi/8)
+            #     # Can't exceed 1
+            #     if intensity > 1:
+            #         intensity = 1
                 
-                # Measures time since last buzz => maintains gap
-                time  =  perf_counter()-start
-                if time - commandTime > 0.5:
-                    commandTime = perf_counter()-start
-                    sv.play(index=index, intensity=intensity, duration=0.5)
-                angle = angle_dict[index]
+            #     # Measures time since last buzz => maintains gap
+            #     time  =  perf_counter()-start
+            #     if time - commandTime > 0.5:
+            #         commandTime = perf_counter()-start
+            #         sv.play(index=index, intensity=intensity, duration=0.5)
+            #     angle = angle_dict[index]
         
-            else:
-                # No haptics => Intensity=0, Angle=0
-                angle = 0 
-                intensity = 0
+            # else:
+            #     # No haptics => Intensity=0, Angle=0
+            #     angle = 0 
+            #     intensity = 0
                 
                 
             if sv.checkTolerance(tec_tup,tolerance) and\
@@ -127,8 +130,6 @@ try:
                 ball.setFill('blue')
                 ball.draw(win)
             
-            time = perf_counter()-start
-            
             # Checks if target is hit
             x_diff = abs( ball.getCenter().x-target.getCenter().x)
             y_diff = abs( ball.getCenter().y-target.getCenter().y)
@@ -138,17 +139,21 @@ try:
                 score += 1
                 break
             
+            time = perf_counter()-start
+            
     win.close()
     sv.close([teacher, student, dong])
     print('\nYour score is {}.'.format(score))
     
 except KeyboardInterrupt:
-    # For manual shutdown
-    win.close()
-    sv.close([teacher, student, dong])
-    print('\nYour score is {}.'.format(score))
     
-# except NameError:
-#     # Will execute if setup not completed
-#     sv.close([dong])
-#     print('\nYour score is {}.'.format(score))
+    # For manual shutdown
+    try:
+        win.close()
+        sv.close([teacher, student, dong])
+        print('\nYour score is {}.'.format(score))
+        
+    except NameError:
+        # Will execute if setup not completed
+        sv.close([dong])
+        print('\nYour score is {}.'.format(score))
