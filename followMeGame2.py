@@ -27,6 +27,9 @@ try:
     # Register and Tare Sensors
     teacher, student, dong = sv.getDevices()
     
+    # Register haptic files
+    sv.register(3)
+    
     # Make Ball
     pt = g.Point(x_bounds/2, y_bounds/2)
     
@@ -70,34 +73,7 @@ try:
             # Play haptics, return values for recording
             angle, intensity, commandTime = sv.advancedPlay(index, diff_tup,
                                                             start, commandTime)
-            # Advanced play
-            # if index != '':
-        
-            #     # Decide which axis to check based on bigger difference
-            #     if abs(diff_tup[1]) > abs(diff_tup[2]):
-            #         check_coord = 1
-            #     else:
-            #         check_coord = 2
-        
-            #     # Modulate intensity based on assumed max movement angle
-            #     intensity = abs(diff_tup[check_coord])/(pi/8)
-            #     # Can't exceed 1
-            #     if intensity > 1:
-            #         intensity = 1
-                
-            #     # Measures time since last buzz => maintains gap
-            #     time  =  perf_counter()-start
-            #     if time - commandTime > 0.5:
-            #         commandTime = perf_counter()-start
-            #         sv.play(index=index, intensity=intensity, duration=0.5)
-            #     angle = angle_dict[index]
-        
-            # else:
-            #     # No haptics => Intensity=0, Angle=0
-            #     angle = 0 
-            #     intensity = 0
-                
-                
+            
             if sv.checkTolerance(tec_tup,tolerance) and\
                 sv.checkTolerance(stu_tup,tolerance):
                     

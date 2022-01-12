@@ -94,7 +94,7 @@ def register(iteration):
         player.register(value+str(iteration), value+str(iteration)+".tact")
 
 
-def play(index, intensity=1, duration=0.5, iteration=3):
+def play(index='w', intensity=1, duration=0.5, iteration=3):
     '''Takes keyboard input, intensity value; selects haptic file from dict;
     plays file with adjusted intensity, options for duration and rotation'''
 
