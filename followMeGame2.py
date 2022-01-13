@@ -1,7 +1,41 @@
 # -*- coding: utf-8 -*-
 """
-Follow Me Game Visualization
+Tandem Follow Me Game
 
+    Try
+        Make graphics window
+        Register and tare sensors
+        Register haptic files
+        Make ball graphic
+        Set conditions
+        
+        Main loop
+            Spawn target
+            
+            Movement loop
+                Get position data
+                Select haptics direction
+                Play haptics, return recorded values
+                Convert sensor angle movement to ball movement
+                Speed limit
+                Respawn ball if out of bounds
+                Checks for hit target
+                
+        Close window
+        Close sensors
+        Display Score
+        
+    Except KeyboadInterrupt
+        Try
+            Close window
+            Close sensors
+            Display Score
+            
+        Except NameError
+            Close window
+            Close sensors
+            Display Score
+    
 Reference: http://anh.cs.luc.edu/handsonPythonTutorial/graphics.html
 
 Created on Thu Dec 23 08:19:17 2021
@@ -16,7 +50,6 @@ from random import randint
 
 angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,'sa': 5*pi/4, 
               's': 3*pi/2, 'sd': 7*pi/4}
-
 
 try:
     # Make Window
@@ -62,18 +95,20 @@ try:
         # Movement Loop
         while True:    
             
+            # Get position data
             tec_tup = teacher.getStreamingBatch()
             stu_tup = student.getStreamingBatch()
             diff_tup = diff_tup = (stu_tup[0]-tec_tup[0], stu_tup[1]-tec_tup[1],
                     stu_tup[2]-tec_tup[2])
             
-            # Select haptics direction, play, return values for writing
+            # Select haptics direction
             index = sv.getIndex(diff_tup,tolerance)
             
             # Play haptics, return values for recording
             angle, intensity, commandTime = sv.advancedPlay(index, diff_tup,
                                                             start, commandTime)
             
+            # Convert sensor angle movement to ball movement
             if sv.checkTolerance(tec_tup,tolerance) and\
                 sv.checkTolerance(stu_tup,tolerance):
                     

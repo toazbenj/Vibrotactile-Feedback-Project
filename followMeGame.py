@@ -2,6 +2,36 @@
 """
 Follow Me Game Visualization
 
+    Try
+        Make graphics window
+        Register and tare sensors
+        Make ball graphic
+        Set conditions
+        
+        Main loop
+            Spawn target
+            
+            Movement loop
+                Get position data
+                Convert sensor angle movement to ball movement
+                Speed limit
+                Respawn ball if out of bounds
+                Checks for hit target
+                
+        Close window
+        Close sensors
+        Display Score
+        
+    Except KeyboadInterrupt
+        Close window
+        Close sensors
+        Display Score
+            
+    Except NameError
+        Close window
+        Close sensors
+        Display Score
+            
 Reference: http://anh.cs.luc.edu/handsonPythonTutorial/graphics.html
 
 Created on Thu Dec 23 08:19:17 2021

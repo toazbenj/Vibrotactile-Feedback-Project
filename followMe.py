@@ -13,13 +13,7 @@ Follow Me Algorthm
             Get teacher and student position data
             Calculate difference
             Select haptics index
-
-            If tolerance exceeded
-                Find direction of max difference
-                Modulate intensity
-                Play haptics with given interval
-                Record intensity and direction
-            
+            Play haptics, return values for recording
             Display data at specified interval
             Record data
             
@@ -27,7 +21,6 @@ Follow Me Algorthm
 
     Except KeyboardInterrupt
         Close devices
-
 
 Created on Thu Nov 18 11:42:07 2021
 @author: Ben Toaz
