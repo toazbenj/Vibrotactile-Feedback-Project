@@ -80,7 +80,7 @@ try:
         
         reps += 1
         time = perf_counter()-start
-        sv.writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle)
+        sv.writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle,0,1)
 
     sv.close([teacher, student, dong])
 

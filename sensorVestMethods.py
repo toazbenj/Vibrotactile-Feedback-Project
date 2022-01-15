@@ -28,7 +28,9 @@ Sensor and Vest Methods
         Close all devices so next program can run
     
     writeData
-        Take timestamp, position data, haptics data, write to csv file
+        Take timestamp, position data, haptics data, write to csv file. Overloaded
+        so parameter of 1 for mode will write without a score (followMe) and 
+        anything else will result in writing with score (followMeGame)
     
     testPos-Ignore this one
         Takes position tuple and margin of error tolerance, if position in each
@@ -44,15 +46,15 @@ import csv
 from math import pi
 from time import perf_counter
 
-# Dict of file names matched with keystrokes, all files and then only cardinal directions
+# Dict of file names matched with keystrokes
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
                 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
                 'sd': 'BackRight'}
 
 # Numerical representation of direction for records
-angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,'sa': 5*pi/4, 
-              's': 3*pi/2, 'sd': 7*pi/4}
+angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
+              'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
 
 def register(iteration):
     
@@ -210,17 +212,29 @@ def close(device_lst):
         d.close()
         
 
-def writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle):
-    """Take timestamp, position data, haptics data, write to csv file"""
+def writeData(file, time, tec_tup, stu_tup, diff_tup, intensity, angle, score, mode):
+    """
+    Take timestamp, position data, haptics data, write to csv file. Overloaded
+    so parameter of 1 for mode will write without a score (followMe) and 
+    anything else will result in writing with score (followMeGame)
+    """
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         
-        csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
-            str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
-            str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
-            str(round(stu_tup[2], 3)), str(round(diff_tup[0], 3)), 
-            str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
-            str(round(intensity, 3)), str(round(angle, 2))])    
+        if mode == 1:
+            csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
+                str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
+                str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
+                str(round(stu_tup[2], 3)), str(round(diff_tup[0], 3)), 
+                str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
+                str(round(intensity, 3)), str(round(angle, 2))])    
+        else:
+            csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
+                str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
+                str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
+                str(round(stu_tup[2], 3)), str(round(diff_tup[0], 3)), 
+                str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
+                str(round(intensity, 3)), str(round(angle, 2)),str(score)])    
     
 
 def testPos(pos_tup1, pos_tup2, tolerance=0):

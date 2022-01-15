@@ -47,13 +47,14 @@ import sensorVestMethods as sv
 from math import pi
 from time import perf_counter
 from random import randint
+import csv
 
-angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,'sa': 5*pi/4, 
-              's': 3*pi/2, 'sd': 7*pi/4}
+angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
+              'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
 
 try:
     # Make Window
-    x_bounds = 1000 
+    x_bounds = 750
     y_bounds = 500
     win = g.GraphWin(width = x_bounds, height = y_bounds)
     
@@ -80,7 +81,17 @@ try:
     speed_limit = 15
     score = 0
     index = ''
+    file ='gameDemo.csv'
     
+    header = ['Time','Teacher-x','Teacher-y','Teacher-z','Student-x',
+              'Student-y','Student-z','Difference-x','Difference-y',
+              'Difference-z','Intensity','Angle','Score']
+    
+    # Open data file, write header
+    with open(file, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(header)
+        
     # Main Loop, 1 minute run time
     while time < 60:
         # Remake Target
@@ -98,8 +109,9 @@ try:
             # Get position data
             tec_tup = teacher.getStreamingBatch()
             stu_tup = student.getStreamingBatch()
-            diff_tup = diff_tup = (stu_tup[0]-tec_tup[0], stu_tup[1]-tec_tup[1],
-                    stu_tup[2]-tec_tup[2])
+            diff_tup = diff_tup = (stu_tup[0]-tec_tup[0], 
+                                   stu_tup[1]-tec_tup[1],
+                                   stu_tup[2]-tec_tup[2])
             
             # Select haptics direction
             index = sv.getIndex(diff_tup,tolerance)
@@ -151,6 +163,8 @@ try:
                 break
             
             time = perf_counter()-start
+            sv.writeData(file, time, tec_tup, stu_tup, diff_tup, intensity, 
+                         angle, score,2)
             
     win.close()
     sv.close([teacher, student, dong])
