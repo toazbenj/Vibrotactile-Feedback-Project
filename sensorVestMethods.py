@@ -47,10 +47,16 @@ from math import pi
 from time import perf_counter
 
 # Dict of file names matched with keystrokes
+# Version 3
+# haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
+#                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
+#                 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
+#                 'sd': 'BackRight'}
+
+# Version 4
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-                's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
-                'wa': 'ForwardLeft', 'wd': 'ForwardRight', 'sa': 'BackLeft',
-                'sd': 'BackRight'}
+                's': 'MoveBack', 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 
+                'sa': 'BackLeft', 'sd': 'BackRight'}
 
 # Numerical representation of direction for records
 angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
@@ -86,7 +92,7 @@ def play(index='w', intensity=1, duration=0.5, iteration=3):
             rotation_option={"offsetAngleX": 0, "offsetY": 0})
 
 
-def advancedPlay(index, diff_tup, start, commandTime):
+def advancedPlay(index, diff_tup, start, commandTime, iteration):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording.
@@ -109,7 +115,7 @@ def advancedPlay(index, diff_tup, start, commandTime):
         time  =  perf_counter()-start
         if time - commandTime > 0.5:
             commandTime = perf_counter()-start
-            play(index=index, intensity=intensity, duration=0.5,iteration=3)
+            play(index=index, intensity=intensity, duration=0.5,iteration=iteration)
         angle = angle_dict[index]
 
     else:
@@ -164,17 +170,22 @@ def getDevices():
     Search for docked devices, make list, assign names and orientation,
     display battery levels, return devices
     """
+    # Move slot selected within dongle to make room for other projects
+    # Slots 0-4 for robot project, 5-7 for vibrotactile feedback
+    offset = 5
+    
     device_list = ts_api.getComPorts()
     com_port, friendly_name, device_type = device_list[0]
     dng_device = ts_api.TSDongle(com_port=com_port)
 
-    device_dict = {1: dng_device[0], 3: dng_device[1], 4: dng_device[2]}
+    device_dict = {1: dng_device[0+offset], 3: dng_device[1+offset],
+                   4: dng_device[2+offset]}
 
     key = input('Select teacher (1,3,4)>>')
-    device1 = device_dict[int(key)]
+    device1 = device_dict[int(key)+offset]
 
     key = input('Select student (1,3,4)>>')
-    device2 = device_dict[int(key)]
+    device2 = device_dict[int(key)+offset]
     
     percent1 = device1.getBatteryPercentRemaining()
     percent2 = device2.getBatteryPercentRemaining()

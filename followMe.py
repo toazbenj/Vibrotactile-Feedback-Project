@@ -34,7 +34,8 @@ import csv
 # If stopped, sensors and files will still get closed
 try:
     # Register haptic files
-    sv.register(3)
+    iteration = 4
+    sv.register(iteration)
 
     # Register and Tare Sensors
     teacher, student, dong = sv.getDevices()
@@ -69,7 +70,8 @@ try:
 
         # Play haptics, return values for recording
         angle, intensity, commandTime = sv.advancedPlay(index, diff_tup, 
-                                                        start, commandTime)
+                                                        start, commandTime, 
+                                                        iteration)
         
         # Display Data
         if reps % 5 == 0:

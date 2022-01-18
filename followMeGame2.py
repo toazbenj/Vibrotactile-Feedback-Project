@@ -62,7 +62,8 @@ try:
     teacher, student, dong = sv.getDevices()
     
     # Register haptic files
-    sv.register(3)
+    iteration = 4
+    sv.register(iteration)
     
     # Make Ball
     pt = g.Point(x_bounds/2, y_bounds/2)
@@ -118,7 +119,8 @@ try:
             
             # Play haptics, return values for recording
             angle, intensity, commandTime = sv.advancedPlay(index, diff_tup,
-                                                            start, commandTime)
+                                                            start, commandTime, 
+                                                            iteration)
             
             # Convert sensor angle movement to ball movement
             if sv.checkTolerance(tec_tup,tolerance) and\
