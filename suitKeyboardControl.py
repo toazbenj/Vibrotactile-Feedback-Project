@@ -30,10 +30,14 @@ player.initialize()
 # haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
 #                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump"}
 
+# haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
+#                 's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
+#                 '1': 'ForwardLeft', '2': 'ForwardRight', '3': 'BackLeft',
+#                 '4': 'BackRight'}
+
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-                's': 'MoveBack', 'q': 'TurnCCW', 'e': 'TurnCW', 'x': "Jump",
-                '1': 'ForwardLeft', '2': 'ForwardRight', '3': 'BackLeft',
-                '4': 'BackRight'}
+                's': 'MoveBack', '1': 'ForwardLeft', '2': 'ForwardRight', 
+                '3': 'BackLeft','4': 'BackRight'}
 
 # Load Tact files from directory
 for value in haptic_dict.values():
@@ -48,8 +52,6 @@ def play(index):
         print('\n'+haptic_dict[index])
         player.submit_registered(haptic_dict[index]+str(iteration))
 
-
-    
 # Active Session Loop
 print("Press '.' to quit")
 while True:

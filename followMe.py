@@ -19,15 +19,18 @@ Follow Me Algorthm
             
         Close devices
 
-    Except KeyboardInterrupt
-        Close devices
+    Except KeyboadInterrupt
+        Try
+            Close sensors
+        Except NameError
+            Close dongle
 
 Created on Thu Nov 18 11:42:07 2021
 @author: Ben Toaz
 """
 
 from math import pi
-import sensorVestMethods as sv
+import utilitiesMethods as utilities
 from time import perf_counter
 import csv
 
@@ -35,10 +38,10 @@ import csv
 try:
     # Register haptic files
     iteration = 4
-    sv.register(iteration)
+    utilities.register(iteration)
 
     # Register and Tare Sensors
-    teacher, student, dong = sv.getDevices()
+    teacher, student, dong = utilities.getDevices()
 
     # Sentinels and Conditions
     time = 0
@@ -60,39 +63,40 @@ try:
     while time < 120:
 
         # Get batch of position data as (x,y,z) tuple, calculate difference
-        tec_tup = teacher.getStreamingBatch()
-        stu_tup = student.getStreamingBatch()
-        diff_tup = (stu_tup[0]-tec_tup[0], stu_tup[1]-tec_tup[1],
-                    stu_tup[2]-tec_tup[2])
+        teacher_tup = teacher.getStreamingBatch()
+        student_tup = student.getStreamingBatch()
+        difference_tup = (student_tup[0]-teacher_tup[0], student_tup[1]-teacher_tup[1],
+                    student_tup[2]-teacher_tup[2])
 
         # Movement selection
-        index = sv.getIndex(diff_tup, tolerance)
+        index = utilities.getIndex(difference_tup, tolerance)
 
         # Play haptics, return values for recording
-        angle, intensity, commandTime = sv.advancedPlay(index, diff_tup, 
-                                                        start, commandTime, 
-                                                        iteration)
+        angle, intensity, commandTime = utilities.advancedPlay(
+            index, difference_tup, start, commandTime, iteration)
         
         # Display Data
         if reps % 5 == 0:
             print('Error {}, {}, {}'.format(
                 round(
-                    diff_tup[0], 3), round(diff_tup[1], 3), round(
-                        diff_tup[2], 3)))
+                    difference_tup[0], 3), round(difference_tup[1], 3), round(
+                        difference_tup[2], 3)))
         
         reps += 1
         time = perf_counter()-start
-        sv.writeData(file,time,tec_tup,stu_tup,diff_tup,intensity,angle,0,1)
+        utilities.writeData(file,time, teacher_tup, student_tup, 
+                            difference_tup, intensity, angle, 0, 1)
 
-    sv.close([teacher, student, dong])
+    utilities.close([teacher, student, dong])
 
 except KeyboardInterrupt:
-    # Will execute if stopped manually
-    sv.close([teacher, student, dong])
-    print('All closed out.')
     
-except NameError:
-    # Will execute if setup not completed
-    sv.close([dong])
-    print('Dongle closed out.')
+    # For manual shutdown
+    try:
+        utilities.close([teacher, student, dong])
+                
+    except NameError:
+        # Will execute if setup not completed
+        utilities.close([dong])
+
     

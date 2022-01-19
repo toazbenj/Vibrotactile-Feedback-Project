@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tandem Follow Me Game
+Tandem Control Game
 
     Try
         Make graphics window
@@ -33,7 +33,7 @@ Tandem Follow Me Game
             
         Except NameError
             Close window
-            Close sensors
+            Close dongle
             Display Score
     
 Reference: http://anh.cs.luc.edu/handsonPythonTutorial/graphics.html
@@ -42,8 +42,8 @@ Created on Thu Dec 23 08:19:17 2021
 @author: Ben Toaz
 """
 
-import graphics as g
-import sensorVestMethods as sv
+import graphics
+import utilitiesMethods as utilities
 from math import pi
 from time import perf_counter
 from random import randint
@@ -56,22 +56,22 @@ try:
     # Make Window
     x_bounds = 750
     y_bounds = 500
-    win = g.GraphWin(width = x_bounds, height = y_bounds)
+    window = graphics.GraphWin(width = x_bounds, height = y_bounds)
     
     # Register and Tare Sensors
-    teacher, student, dong = sv.getDevices()
+    teacher, student, dongle = utilities.getDevices()
     
     # Register haptic files
     iteration = 4
-    sv.register(iteration)
+    utilities.register(iteration)
     
     # Make Ball
-    pt = g.Point(x_bounds/2, y_bounds/2)
+    point = graphics.Point(x_bounds/2, y_bounds/2)
     
-    ball = g.Circle(pt, 25)
+    ball = graphics.Circle(point, 25)
     ball.setOutline('blue')
     ball.setFill('blue')
-    ball.draw(win)
+    ball.draw(window)
     
     # Sentinels/Conditions
     time = 0
@@ -99,61 +99,58 @@ try:
         x_coord = x_bounds * randint(2, 9)/10
         y_coord = y_bounds * randint(2, 9)/10
         
-        pt = g.Point(x_coord,y_coord)
-        target = g.Circle(pt,30)
+        point = graphics.Point(x_coord,y_coord)
+        target = graphics.Circle(point,30)
         target.setOutline('red')
-        target.draw(win)        
+        target.draw(window)        
         
         # Movement Loop
         while True:    
             
             # Get position data
-            tec_tup = teacher.getStreamingBatch()
-            stu_tup = student.getStreamingBatch()
-            diff_tup = diff_tup = (stu_tup[0]-tec_tup[0], 
-                                   stu_tup[1]-tec_tup[1],
-                                   stu_tup[2]-tec_tup[2])
+            teacher_tup = teacher.getStreamingBatch()
+            student_tup = student.getStreamingBatch()
+            difference_tup = difference_tup = (student_tup[0]-teacher_tup[0], 
+                                   student_tup[1]-teacher_tup[1],
+                                   student_tup[2]-teacher_tup[2])
             
             # Select haptics direction
-            index = sv.getIndex(diff_tup,tolerance)
+            index = utilities.getIndex(difference_tup, tolerance)
             
             # Play haptics, return values for recording
-            angle, intensity, commandTime = sv.advancedPlay(index, diff_tup,
-                                                            start, commandTime, 
-                                                            iteration)
+            angle, intensity, commandTime = utilities.advancedPlay(
+                index, difference_tup, start, commandTime, iteration)
             
             # Convert sensor angle movement to ball movement
-            if sv.checkTolerance(tec_tup,tolerance) and\
-                sv.checkTolerance(stu_tup,tolerance):
+            if utilities.checkTolerance(teacher_tup, tolerance) and\
+                utilities.checkTolerance(student_tup, tolerance):
                     
-                x = (tec_tup[1]+stu_tup[1]) / (2*pi/4) * 10
-                y = (tec_tup[2]+stu_tup[2]) / (2*pi/4) * 10                
+                x_move = (teacher_tup[1]+student_tup[1]) / (2*pi/4) * 10
+                y_move = (teacher_tup[2]+student_tup[2]) / (2*pi/4) * 10                
             else:
-                x = 0 
-                y = 0
-            
-            # print('{}, {}'.format(round(pt.x,3),round(pt.y,3)))
-            
+                x_move = 0 
+                y_move = 0
+                        
             # If speed limit exceeded, sets speed to limit in same direction
-            if abs(x) > speed_limit:
-                x = speed_limit * x/x
-            if abs(y) > speed_limit:
-                y = speed_limit * y/y
+            if abs(x_move) > speed_limit:
+                x_move = speed_limit * (x_move/x_move)
+            if abs(y_move) > speed_limit:
+                y_move = speed_limit * (y_move/y_move)
             
-            ball.move(-x,-y)
+            ball.move(-x_move,-y_move)
             
             # Respawns ball in center of window if out of bounds
             if ball.getCenter().x > x_bounds or ball.getCenter().y > y_bounds\
                 or ball.getCenter().x < 0 or ball.getCenter().y < 0:
                 
-                pt.undraw()
+                point.undraw()
                 ball.undraw()
                 
-                pt = g.Point(x_bounds/2, y_bounds/2)
-                ball = g.Circle(pt, 25)
+                pt = graphics.Point(x_bounds/2, y_bounds/2)
+                ball = graphics.Circle(pt, 25)
                 ball.setOutline('blue')
                 ball.setFill('blue')
-                ball.draw(win)
+                ball.draw(window)
             
             # Checks if target is hit
             x_diff = abs( ball.getCenter().x-target.getCenter().x)
@@ -165,11 +162,11 @@ try:
                 break
             
             time = perf_counter()-start
-            sv.writeData(file, time, tec_tup, stu_tup, diff_tup, intensity, 
-                         angle, score,2)
+            utilities.writeData(file, time, teacher_tup, student_tup, difference_tup,
+                         intensity, angle, score, 2)
             
-    win.close()
-    sv.close([teacher, student, dong])
+    window.close()
+    utilities.close([teacher, student, dongle])
     print('\nYour score is {}.'.format(score))
     
 except KeyboardInterrupt:
@@ -177,10 +174,10 @@ except KeyboardInterrupt:
     # For manual shutdown
     try:
         win.close()
-        sv.close([teacher, student, dong])
+        utilities.close([teacher, student, dong])
         print('\nYour score is {}.'.format(score))
         
     except NameError:
         # Will execute if setup not completed
-        sv.close([dong])
+        utilities.close([dongle])
         print('\nYour score is {}.'.format(score))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Sensor and Vest Methods
+Utilities Methods for Yosh Labs Sensors and bHaptics Tactsuit
     
     register
         Turn on haptic player, register all haptic files in dictionary
@@ -92,7 +92,7 @@ def play(index='w', intensity=1, duration=0.5, iteration=3):
             rotation_option={"offsetAngleX": 0, "offsetY": 0})
 
 
-def advancedPlay(index, diff_tup, start, commandTime, iteration):
+def advancedPlay(index, difference_tup, start, commandTime, iteration):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording.
@@ -100,13 +100,13 @@ def advancedPlay(index, diff_tup, start, commandTime, iteration):
     if index in haptic_dict:
         
         # Decide which axis to check based on bigger difference
-        if abs(diff_tup[1]) > abs(diff_tup[2]):
+        if abs(difference_tup[1]) > abs(difference_tup[2]):
             check_coord = 1
         else:
             check_coord = 2
 
         # Modulate intensity based on assumed max movement angle
-        intensity = abs(diff_tup[check_coord])/(pi/2)
+        intensity = abs(difference_tup[check_coord])/(pi/2)
         # Can't exceed 1
         if intensity > 1:
             intensity = 1
@@ -126,40 +126,40 @@ def advancedPlay(index, diff_tup, start, commandTime, iteration):
     return angle, intensity, commandTime
 
 
-def getIndex(diff_tup, tolerance):
+def getIndex(difference_tup, tolerance):
     """Select index for given direction moved beyond tolerance."""
     index = ''
     
     # Forward Left (-y difference and -z differnce)
-    if diff_tup[1] <= -tolerance and diff_tup[2] <= -tolerance:
+    if difference_tup[1] <= -tolerance and difference_tup[2] <= -tolerance:
         index = 'wa'
 
     # Forward Right (-z differnce and +y difference)
-    elif diff_tup[2] <= -tolerance and diff_tup[1] >= tolerance:
+    elif difference_tup[2] <= -tolerance and difference_tup[1] >= tolerance:
         index = 'wd'
 
     # Back Right (+y difference +z difference)
-    elif diff_tup[1] >= tolerance and diff_tup[2] >= tolerance:
+    elif difference_tup[1] >= tolerance and difference_tup[2] >= tolerance:
         index = 'sd'
 
     # Back Left (+z difference and -y difference)
-    elif diff_tup[2] >= tolerance and diff_tup[1] <= -tolerance:
+    elif difference_tup[2] >= tolerance and difference_tup[1] <= -tolerance:
         index = 'sa'
         
     # Forward (-z differnce)
-    elif diff_tup[2] <= -tolerance and abs(diff_tup[1]) < abs(diff_tup[2]):
+    elif difference_tup[2] <= -tolerance and abs(difference_tup[1]) < abs(difference_tup[2]):
         index = 'w'
     
     # Left (-y difference)
-    elif diff_tup[1] <= -tolerance and abs(diff_tup[1]) > abs(diff_tup[2]):
+    elif difference_tup[1] <= -tolerance and abs(difference_tup[1]) > abs(difference_tup[2]):
         index = 'a'
 
     # Right (+y difference)
-    elif diff_tup[1] >= tolerance and abs(diff_tup[1]) > abs(diff_tup[2]):
+    elif difference_tup[1] >= tolerance and abs(difference_tup[1]) > abs(difference_tup[2]):
         index = 'd'
 
     # Back (+z difference)
-    elif diff_tup[2] >= tolerance and abs(diff_tup[1]) < abs(diff_tup[2]):
+    elif difference_tup[2] >= tolerance and abs(difference_tup[1]) < abs(difference_tup[2]):
         index = 's'
         
     return index
@@ -182,10 +182,10 @@ def getDevices():
                    4: dng_device[2+offset]}
 
     key = input('Select teacher (1,3,4)>>')
-    device1 = device_dict[int(key)+offset]
+    device1 = device_dict[int(key)]
 
     key = input('Select student (1,3,4)>>')
-    device2 = device_dict[int(key)+offset]
+    device2 = device_dict[int(key)]
     
     percent1 = device1.getBatteryPercentRemaining()
     percent2 = device2.getBatteryPercentRemaining()
@@ -221,9 +221,10 @@ def close(device_lst):
     """Close all devices so next program can run"""
     for d in device_lst:
         d.close()
+    print('Devices closed.')
         
 
-def writeData(file, time, tec_tup, stu_tup, diff_tup, intensity, angle, score, mode):
+def writeData(file, time, tec_tup, stu_tup, difference_tup, intensity, angle, score, mode):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
     so parameter of 1 for mode will write without a score (followMe) and 
@@ -236,15 +237,15 @@ def writeData(file, time, tec_tup, stu_tup, diff_tup, intensity, angle, score, m
             csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
                 str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
                 str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
-                str(round(stu_tup[2], 3)), str(round(diff_tup[0], 3)), 
-                str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
+                str(round(stu_tup[2], 3)), str(round(difference_tup[0], 3)), 
+                str(round(difference_tup[1], 3)), str(round(difference_tup[2], 3)),
                 str(round(intensity, 3)), str(round(angle, 2))])    
         else:
             csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
                 str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
                 str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
-                str(round(stu_tup[2], 3)), str(round(diff_tup[0], 3)), 
-                str(round(diff_tup[1], 3)), str(round(diff_tup[2], 3)),
+                str(round(stu_tup[2], 3)), str(round(difference_tup[0], 3)), 
+                str(round(difference_tup[1], 3)), str(round(difference_tup[2], 3)),
                 str(round(intensity, 3)), str(round(angle, 2)),str(score)])    
     
 
