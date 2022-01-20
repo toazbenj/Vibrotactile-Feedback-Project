@@ -1,40 +1,41 @@
 # -*- coding: utf-8 -*-
 """
 Utilities Methods for Yosh Labs Sensors and bHaptics Tactsuit
-    
+
     register
         Turn on haptic player, register all haptic files in dictionary
         (letters = keys, names = values)
-    
+
     play
         Takes keyboard input, intensity value; selects haptic file from dict;
         plays file with adjusted intensity, options for duration and rotation
-        
+
     advancedPlay
         Scale haptic intensity, play haptics, maintain distance between buzzes,
         return values for recording
-    
+
     getIndex
         Select index for given direction moved beyond tolerance
-        
+
     getDevices
         Search for docked devices, make list, assign names and orientation,
-        display battery levels, return devices
-     
+        display battery levels, tare countdown, return devices
+
     checkTolerance
         Determine if coordinates exceed tolerance
-        
+
     close
         Close all devices so next program can run
-    
+
     writeData
-        Take timestamp, position data, haptics data, write to csv file. Overloaded
-        so parameter of 1 for mode will write without a score (followMe) and 
-        anything else will result in writing with score (followMeGame)
-    
+        Take timestamp, position data, haptics data, write to csv file.
+        Overloaded so parameter of 1 for mode will write without a score
+        (followMe) and anything else will result in writing with score
+        (tandemControlGame)
+
     testPos-Ignore this one
         Takes position tuple and margin of error tolerance, if position in each
-        coordinate +/- tolerance is less than 0.5 from 0, return true, else false
+        coordinate +/- tolerance < 0.5 from 0, return true, else false
 
 Created on Thu Nov 18 10:58:51 2021
 @author: Ben Toaz
@@ -45,6 +46,7 @@ import threespace_api as ts_api
 import csv
 from math import pi
 from time import perf_counter
+from time import sleep
 
 # Dict of file names matched with keystrokes
 # Version 3
@@ -55,15 +57,15 @@ from time import perf_counter
 
 # Version 4
 haptic_dict = {'a': "MoveLeft", 'd': 'MoveRight', 'w': "MoveForward",
-                's': 'MoveBack', 'wa': 'ForwardLeft', 'wd': 'ForwardRight', 
-                'sa': 'BackLeft', 'sd': 'BackRight'}
+               's': 'MoveBack', 'wa': 'ForwardLeft', 'wd': 'ForwardRight',
+               'sa': 'BackLeft', 'sd': 'BackRight'}
 
 # Numerical representation of direction for records
 angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
               'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
 
+
 def register(iteration):
-    
     """
     Turn on haptic player, register all haptic files in dictionary
     (letters = keys, names = values)
@@ -73,9 +75,9 @@ def register(iteration):
     # Load Tact files from directory
     for value in haptic_dict.values():
         player.register(value+str(iteration), value+str(iteration)+".tact")
-        
-        
-def play(index='w', intensity=1, duration=0.5, iteration=3):
+
+
+def play(index='w', intensity=1, duration=0.5, iteration=4):
     """
     Takes keyboard input, intensity value; selects haptic file from dict;
     plays file with adjusted intensity, options for duration and rotation
@@ -98,7 +100,7 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration):
     for recording.
     """
     if index in haptic_dict:
-        
+
         # Decide which axis to check based on bigger difference
         if abs(difference_tup[1]) > abs(difference_tup[2]):
             check_coord = 1
@@ -110,26 +112,27 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration):
         # Can't exceed 1
         if intensity > 1:
             intensity = 1
-        
+
         # Measures time since last buzz => maintains gap
-        time  =  perf_counter()-start
+        time = perf_counter()-start
         if time - commandTime > 0.5:
             commandTime = perf_counter()-start
-            play(index=index, intensity=intensity, duration=0.5,iteration=iteration)
+            play(index=index, intensity=intensity,
+                 duration=0.5, iteration=iteration)
         angle = angle_dict[index]
 
     else:
         # No haptics => Intensity=0, Angle=0
-        angle = 0 
+        angle = 0
         intensity = 0
-        
+
     return angle, intensity, commandTime
 
 
 def getIndex(difference_tup, tolerance):
     """Select index for given direction moved beyond tolerance."""
     index = ''
-    
+
     # Forward Left (-y difference and -z differnce)
     if difference_tup[1] <= -tolerance and difference_tup[2] <= -tolerance:
         index = 'wa'
@@ -145,35 +148,39 @@ def getIndex(difference_tup, tolerance):
     # Back Left (+z difference and -y difference)
     elif difference_tup[2] >= tolerance and difference_tup[1] <= -tolerance:
         index = 'sa'
-        
+
     # Forward (-z differnce)
-    elif difference_tup[2] <= -tolerance and abs(difference_tup[1]) < abs(difference_tup[2]):
+    elif difference_tup[2] <= -tolerance and\
+            abs(difference_tup[1]) < abs(difference_tup[2]):
         index = 'w'
-    
+
     # Left (-y difference)
-    elif difference_tup[1] <= -tolerance and abs(difference_tup[1]) > abs(difference_tup[2]):
+    elif difference_tup[1] <= -tolerance and\
+            abs(difference_tup[1]) > abs(difference_tup[2]):
         index = 'a'
 
     # Right (+y difference)
-    elif difference_tup[1] >= tolerance and abs(difference_tup[1]) > abs(difference_tup[2]):
+    elif difference_tup[1] >= tolerance and\
+            abs(difference_tup[1]) > abs(difference_tup[2]):
         index = 'd'
 
     # Back (+z difference)
-    elif difference_tup[2] >= tolerance and abs(difference_tup[1]) < abs(difference_tup[2]):
+    elif difference_tup[2] >= tolerance and\
+            abs(difference_tup[1]) < abs(difference_tup[2]):
         index = 's'
-        
+
     return index
 
 
 def getDevices():
     """
     Search for docked devices, make list, assign names and orientation,
-    display battery levels, return devices
+    display battery levels, tare countdown, return devices
     """
     # Move slot selected within dongle to make room for other projects
     # Slots 0-4 for robot project, 5-7 for vibrotactile feedback
     offset = 5
-    
+
     device_list = ts_api.getComPorts()
     com_port, friendly_name, device_type = device_list[0]
     dng_device = ts_api.TSDongle(com_port=com_port)
@@ -186,23 +193,27 @@ def getDevices():
 
     key = input('Select student (1,3,4)>>')
     device2 = device_dict[int(key)]
-    
+
     percent1 = device1.getBatteryPercentRemaining()
     percent2 = device2.getBatteryPercentRemaining()
-    
+
     print('Teacher battery at {}%'.format(percent1))
     print('Student battery at {}%'.format(percent2))
 
     device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
     device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
 
-    while True:
-        key = input('Press T to tare>>')    
-        if key.lower() == 't':
-            break
-    
+    print("Taring in 5\n")
+
+    for i in reversed(range(0, 5)):
+        sleep(1)
+        print(i)
+        print('\n')
+
     device1.tareWithCurrentOrientation()
     device2.tareWithCurrentOrientation()
+
+    print('GO!\n')
 
     return device1, device2, dng_device
 
@@ -210,44 +221,59 @@ def getDevices():
 def checkTolerance(check_tup, tolerance):
     """Determine if coordinates exceed tolerance."""
     if check_tup[1] > tolerance or check_tup[1] < -tolerance\
-        or check_tup[2] > tolerance or check_tup[2] < -tolerance:
-        
-        return True 
+            or check_tup[2] > tolerance or check_tup[2] < -tolerance:
+
+        return True
     else:
         return False
- 
+
 
 def close(device_lst):
     """Close all devices so next program can run"""
     for d in device_lst:
         d.close()
     print('Devices closed.')
-        
 
-def writeData(file, time, tec_tup, stu_tup, difference_tup, intensity, angle, score, mode):
+
+def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
+              angle, score, mode):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
-    so parameter of 1 for mode will write without a score (followMe) and 
+    so parameter of 1 for mode will write without a score (followMe) and
     anything else will result in writing with score (followMeGame)
     """
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        
+
         if mode == 1:
-            csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
-                str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
-                str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
-                str(round(stu_tup[2], 3)), str(round(difference_tup[0], 3)), 
-                str(round(difference_tup[1], 3)), str(round(difference_tup[2], 3)),
-                str(round(intensity, 3)), str(round(angle, 2))])    
+            csvwriter.writerow([str(round(time, 3)),
+                                str(round(teacher_tup[0], 3)),
+                                str(round(teacher_tup[1], 3)),
+                                str(round(teacher_tup[2], 3)),
+                                str(round(student_tup[0], 3)),
+                                str(round(student_tup[1], 3)),
+                                str(round(student_tup[2], 3)),
+                                str(round(difference_tup[0], 3)),
+                                str(round(difference_tup[1], 3)),
+                                str(round(difference_tup[2], 3)),
+                                str(round(intensity, 3)),
+                                str(round(angle, 2))])
+
         else:
-            csvwriter.writerow([str(round(time,3)), str(round(tec_tup[0], 3)), 
-                str(round(tec_tup[1], 3)), str(round(tec_tup[2], 3)), 
-                str(round(stu_tup[0], 3)), str(round(stu_tup[1], 3)), 
-                str(round(stu_tup[2], 3)), str(round(difference_tup[0], 3)), 
-                str(round(difference_tup[1], 3)), str(round(difference_tup[2], 3)),
-                str(round(intensity, 3)), str(round(angle, 2)),str(score)])    
-    
+            csvwriter.writerow([str(round(time, 3)),
+                                str(round(teacher_tup[0], 3)),
+                                str(round(teacher_tup[1], 3)),
+                                str(round(teacher_tup[2], 3)),
+                                str(round(student_tup[0], 3)),
+                                str(round(student_tup[1], 3)),
+                                str(round(student_tup[2], 3)),
+                                str(round(difference_tup[0], 3)),
+                                str(round(difference_tup[1], 3)),
+                                str(round(difference_tup[2], 3)),
+                                str(round(intensity, 3)),
+                                str(round(angle, 2)),
+                                str(score)])
+
 
 def testPos(pos_tup1, pos_tup2, tolerance=0):
     """
@@ -255,7 +281,7 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
     coordinate +/- toleance is less than 0.5 from 0, return true, else false
     """
     # Currently not in use
-    
+
     # Default values
     x_test_bool = False
     # y_test_bool = False
@@ -264,7 +290,7 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
 
     # Test for position close to origin within given tolerance
     if ((round(pos_tup1[0], decimals) >= (pos_tup2[0] - tolerance))
-        and (round(pos_tup1[0], decimals) <= (pos_tup2[0] + tolerance))):
+            and (round(pos_tup1[0], decimals) <= (pos_tup2[0] + tolerance))):
         x_test_bool = True
 
     # if (round(pos_tup1[1], decimals) >= (pos_tup2[1] - tolerance)
@@ -272,7 +298,7 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
     #     y_test_bool = True
 
     if (round(pos_tup1[2], decimals) >= (pos_tup2[2] - tolerance)
-        and round(pos_tup1[2], decimals) <= (pos_tup2[2] + tolerance)):
+            and round(pos_tup1[2], decimals) <= (pos_tup2[2] + tolerance)):
         z_test_bool = True
 
     # Test if all positions pass tests
