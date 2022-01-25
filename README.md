@@ -18,7 +18,4 @@ Support
 
 All file folders and other python programs are relavant to running these two programs with few exceptions. Special emphasis is put on utilitiesMethods, threespace_api, and the 
 bhaptics folder. Within this package is also contained the TACT haptics files accessed by the programs to activate the motors of the Tactsuits in proper sequence. These were 
-made using the free development resource at https://designer.bhaptics.com/. bHaptics Player is needed to connect to the Tactsuits, though the programs can run without error 
-while the suits are not connected for testing purposes. Both programs were written to be used with a bluetooth dongle and 2 YOSH Labs IMU sensors. Their serial numbers must be
-committed to the dongle using the YOSH Labs 3-Space Suit application before they can be referenced within the program. These programs work best when used with python 3.8.5 or 
-later.
+made using the free development resource at https://designer.bhaptics.com/. bHaptics Device Player is needed to connect to the Tactsuits, though the programs can run without error while the suits are not connected for testing purposes. Both programs were written to be used with a bluetooth dongle and 2 YOSH Labs IMU sensors. Their serial numbers must be committed to the dongle using the YOSH Labs 3-Space Suit application before they can be referenced within the program. These programs work best when used with python 3.8.5 or later.
