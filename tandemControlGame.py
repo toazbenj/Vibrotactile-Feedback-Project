@@ -48,14 +48,19 @@ from math import pi
 from time import perf_counter
 from random import randint
 import csv
+from math import sin
+from math import cos
 
 angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
               'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
 
+theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
+rand_lst = []
+
 try:
     # Make Window
     x_bounds = 750
-    y_bounds = 500
+    y_bounds = 750
     window = graphics.GraphWin(width=x_bounds, height=y_bounds)
 
     # Register and Tare Sensors
@@ -65,14 +70,6 @@ try:
     iteration = 4
     utilities.register(iteration)
 
-    # Make Ball
-    point = graphics.Point(x_bounds/2, y_bounds/2)
-
-    ball = graphics.Circle(point, 25)
-    ball.setOutline('blue')
-    ball.setFill('blue')
-    ball.draw(window)
-
     # Sentinels/Conditions
     time = 0
     start = perf_counter()
@@ -81,6 +78,7 @@ try:
     miss_margin = 10
     speed_limit = 15
     score = 0
+    radius = 3/10*x_bounds
     index = ''
     file = 'gameDemo.csv'
 
@@ -92,18 +90,34 @@ try:
     with open(file, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(header)
-
-    # Main Loop, 1 minute run time
-    while time < 60:
-        # Remake Target
-        x_coord = x_bounds * randint(2, 9)/10
-        y_coord = y_bounds * randint(2, 9)/10
-
+        
+    for i in theta_lst:
+        position = randint(0,8)
+        try:
+            move = rand_lst[position]
+            rand_lst[position] = i
+            rand_lst.append(move)
+        except IndexError:
+            rand_lst.append(i)
+        
+    # Main Loop, randomly generates 8 targets
+    for i in rand_lst:
+        # Make target
+        x_coord = x_bounds * (1/2) + radius *(cos(i))
+        y_coord = x_bounds * (1/2) + radius *(sin(i))
+        
         point = graphics.Point(x_coord, y_coord)
         target = graphics.Circle(point, 30)
         target.setOutline('red')
         target.draw(window)
-
+        
+        # Make Ball
+        point = graphics.Point(x_bounds/2, y_bounds/2)
+        ball = graphics.Circle(point, 25)
+        ball.setOutline('blue')
+        ball.setFill('blue')
+        ball.draw(window)
+    
         # Movement Loop
         while True:
 
@@ -159,6 +173,7 @@ try:
             if x_diff < miss_margin and y_diff < miss_margin:
                 target.undraw()
                 score += 1
+                ball.undraw()
                 break
 
             time = perf_counter()-start
@@ -167,7 +182,7 @@ try:
 
     window.close()
     utilities.close([teacher, student, dongle])
-    print('\nYour score is {}.'.format(score))
+    print('\nYour time is {}.'.format(round(time,2)))
 
 except KeyboardInterrupt:
 
@@ -175,9 +190,9 @@ except KeyboardInterrupt:
     try:
         win.close()
         utilities.close([teacher, student, dong])
-        print('\nYour score is {}.'.format(score))
+        print('\nYour time is {}.'.format(round(time,2)))
 
     except NameError:
         # Will execute if setup not completed
         utilities.close([dongle])
-        print('\nYour score is {}.'.format(score))
+        print('\nYour time is {}.'.format(round(time,2)))
