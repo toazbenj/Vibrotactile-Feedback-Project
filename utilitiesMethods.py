@@ -172,6 +172,15 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
+def getPercent():
+    " Receive/calculate the amount of cursor control for student/teacher"
+    key = input('Enter teacher control proportion(%)>>')
+    percent_teacher = float(key)*0.01
+    percent_student = 1-percent_teacher
+    
+    return  percent_teacher, percent_student
+
+
 def getDevices():
     """
     Search for docked devices, make list, assign names and orientation,
@@ -194,12 +203,14 @@ def getDevices():
     key = input('Select student (1,3,4)>>')
     device2 = device_dict[int(key)]
 
+    # Display Battery Levels
     percent1 = device1.getBatteryPercentRemaining()
     percent2 = device2.getBatteryPercentRemaining()
 
     print('Teacher battery at {}%'.format(percent1))
     print('Student battery at {}%'.format(percent2))
-
+    
+    # Tare and start data streaming
     device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
     device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
 
@@ -236,7 +247,7 @@ def close(device_lst):
 
 
 def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
-              angle, score, mode):
+              angle, score, ball, target, mode):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
     so parameter of 1 for mode will write without a score (followMe) and
@@ -272,6 +283,10 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
                                 str(round(difference_tup[2], 3)),
                                 str(round(intensity, 3)),
                                 str(round(angle, 2)),
+                                str(round(ball.x_center)),
+                                str(round(ball.y_center)),
+                                str(round(target.x_center)),
+                                str(round(target.y_center)),
                                 str(score)])
 
 

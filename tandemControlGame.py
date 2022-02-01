@@ -63,13 +63,15 @@ try:
     y_bounds = 750
     window = graphics.GraphWin(width=x_bounds, height=y_bounds)
 
-    # Register and Tare Sensors
-    teacher, student, dongle = utilities.getDevices()
-
     # Register haptic files
     iteration = 4
     utilities.register(iteration)
 
+    percent_teacher, percent_student = utilities.getPercent()
+
+    # Register and Tare Sensors
+    teacher, student, dongle, = utilities.getDevices()
+    
     # Sentinels/Conditions
     time = 0
     start = perf_counter()
@@ -84,7 +86,8 @@ try:
 
     header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
               'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
-              'Difference-z', 'Intensity', 'Angle', 'Score']
+              'Difference-z', 'Intensity', 'Angle', 'Ball-x', 'Ball-y', 
+              'Target-x', 'Target-y', 'Score']
 
     # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
@@ -138,9 +141,12 @@ try:
             # Convert sensor angle movement to ball movement
             if utilities.checkTolerance(teacher_tup, tolerance) and\
                     utilities.checkTolerance(student_tup, tolerance):
-                x_move = (teacher_tup[1]+student_tup[1]) / (2*pi/4) * 10
-                y_move = (teacher_tup[2]+student_tup[2]) / (2*pi/4) * 10
-
+                x_move = (percent_teacher*teacher_tup[1]+percent_student\
+                          *student_tup[1]) / (2*pi/4) * 10
+                y_move = (percent_teacher*teacher_tup[2]+percent_student\
+                          *student_tup[2]) / (2*pi/4) * 10
+                    
+                # print('{},{}'.format(round(x_move,2),round(y_move,2)))
             else:
                 x_move = 0
                 y_move = 0
@@ -150,9 +156,12 @@ try:
                 x_move = speed_limit * (x_move/x_move)
             if abs(y_move) > speed_limit:
                 y_move = speed_limit * (y_move/y_move)
-
+                
+            # Move ball, record motion within object
             ball.move(-x_move, -y_move)
-
+            ball.x_center += x_move
+            ball.y_center += y_move
+            
             # Respawns ball in center of window if out of bounds
             if ball.getCenter().x > x_bounds or ball.getCenter().y > y_bounds\
                     or ball.getCenter().x < 0 or ball.getCenter().y < 0:
@@ -178,7 +187,7 @@ try:
 
             time = perf_counter()-start
             utilities.writeData(file, time, teacher_tup, student_tup,
-                                difference_tup, intensity, angle, score, 2)
+                                difference_tup, intensity, angle, score, ball, target, 2)
 
     window.close()
     utilities.close([teacher, student, dongle])
@@ -196,3 +205,8 @@ except KeyboardInterrupt:
         # Will execute if setup not completed
         utilities.close([dongle])
         print('\nYour time is {}.'.format(round(time,2)))
+        
+    except PermissionError:
+        # Forgot to close the CSV
+        utilities.close([dongle])
+

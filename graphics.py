@@ -646,6 +646,8 @@ class Circle(Oval):
         p2 = Point(center.x+radius, center.y+radius)
         Oval.__init__(self, p1, p2)
         self.radius = radius
+        self.x_center = center.x
+        self.y_center = center.y
 
     def __repr__(self):
         return "Circle({}, {})".format(str(self.getCenter()), str(self.radius))
