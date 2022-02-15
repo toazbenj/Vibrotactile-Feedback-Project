@@ -7,6 +7,7 @@ Created on Mon Feb 14 20:19:39 2022
 
 import socket
 from bhaptics import better_haptic_player as player
+import utilitiesMethods as utility
 
 # Initialize s to socket
 s = socket.socket()
@@ -46,4 +47,4 @@ while(True):
     except ValueError:    
         index = command[0]
     
-    play(command)
+    utility.play(command)
