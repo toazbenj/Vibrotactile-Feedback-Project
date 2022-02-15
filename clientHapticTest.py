@@ -34,17 +34,16 @@ player.initialize()
 # Load Tact files from directory
 for value in rvs_haptic_dict.values():
     player.register(value+str(iteration), value+str(iteration)+".tact")
-
-# Feedback options
-def play(index):
-
-    # Find indicated motion
-    if index in rvs_haptic_dict:
-        print('\n'+rvs_haptic_dict[index])
-        player.submit_registered(rvs_haptic_dict[index]+str(iteration))
         
 while(True):
     # receive the command from master program
     command = s.recv(1024)
     command = command.decode()
+    
+    try:
+        intensity = int(command[-1])
+        index = command[0,2]
+    except ValueError:    
+        index = command[0]
+    
     play(command)
