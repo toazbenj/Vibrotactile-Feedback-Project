@@ -1,7 +1,7 @@
 # vibrotactileFeedbackProject
 Haptic Vest and Motion Sensor Interface
 
-Desciption
+Description
 
 This set of programs was made to enable the user to take euler angle position data from YOST Labs 3-space sensors to calculate the relative positions of two subjects.
 That relative position is used to determine the type of haptic feedback to give the second subject, the student, in order to get them to move into the same
