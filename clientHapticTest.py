@@ -2,7 +2,7 @@
 """
 Created on Mon Feb 14 20:19:39 2022
 
-@author: Lynn
+@author:
 """
 
 import socket
