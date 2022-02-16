@@ -97,7 +97,7 @@ def play(index='w', intensity=1, duration=0.5, iteration=4):
 def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
     """
     Scale haptic intensity, maintain time between buzzes, return values
-    for recording.
+    for recording, send index and intesity to teacher client.
     """
     if index in haptic_dict:
 
@@ -119,8 +119,11 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
             commandTime = perf_counter()-start
             play(index=index, intensity=intensity,
                  duration=0.5, iteration=iteration)
+            
+            # Generate command, send to client
             command = str(index)+str(intensity)
             conn.send(command.encode())
+            
         angle = angle_dict[index]
 
     else:
