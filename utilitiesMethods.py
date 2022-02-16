@@ -255,6 +255,12 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
     so parameter of 1 for mode will write without a score (followMe) and
     anything else will result in writing with score (followMeGame)
     """
+    # Teacher's haptics is always 180 degrees opposite student
+    if angle > 0:
+        angle_teacher = angle +pi
+    else:
+        angle_teacher = 0
+        
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
 
@@ -284,6 +290,7 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
                                 str(round(difference_tup[1], 3)),
                                 str(round(difference_tup[2], 3)),
                                 str(round(intensity, 3)),
+                                str(round((angle_teacher), 2)),
                                 str(round(angle, 2)),
                                 str(round(ball.x_center)),
                                 str(round(ball.y_center)),

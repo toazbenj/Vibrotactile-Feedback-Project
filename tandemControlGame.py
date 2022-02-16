@@ -98,7 +98,7 @@ try:
 
     header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
               'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
-              'Difference-z', 'Intensity', 'Angle', 'Ball-x', 'Ball-y', 
+              'Difference-z', 'Intensity','Angle Teacher','Angle Student', 'Ball-x', 'Ball-y', 
               'Target-x', 'Target-y', 'Score']
 
     # Open data file, write header
