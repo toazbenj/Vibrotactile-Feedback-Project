@@ -69,7 +69,7 @@ try:
     s.listen()
     conn, addr = s.accept()
     print(addr, "is connected to server")
-    
+
     # Make Window
     x_bounds = 750
     y_bounds = 750
@@ -83,7 +83,7 @@ try:
 
     # Register and Tare Sensors
     teacher, student, dongle, = utilities.getDevices()
-    
+
     # Sentinels/Conditions
     time = 0
     start = perf_counter()
@@ -98,41 +98,41 @@ try:
 
     header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
               'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
-              'Difference-z', 'Intensity','Angle Teacher','Angle Student', 'Ball-x', 'Ball-y', 
-              'Target-x', 'Target-y', 'Score']
+              'Difference-z', 'Intensity', 'Angle Teacher', 'Angle Student',
+              'Ball-x', 'Ball-y', 'Target-x', 'Target-y', 'Score']
 
     # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(header)
-        
+
     for i in theta_lst:
-        position = randint(0,8)
+        position = randint(0, 8)
         try:
             move = rand_lst[position]
             rand_lst[position] = i
             rand_lst.append(move)
         except IndexError:
             rand_lst.append(i)
-        
+
     # Main Loop, randomly generates 8 targets
     for i in rand_lst:
         # Make target
-        x_coord = x_bounds * (1/2) + radius *(cos(i))
-        y_coord = x_bounds * (1/2) + radius *(sin(i))
-        
+        x_coord = x_bounds * (1/2) + radius * (cos(i))
+        y_coord = x_bounds * (1/2) + radius * (sin(i))
+
         point = graphics.Point(x_coord, y_coord)
         target = graphics.Circle(point, 30)
         target.setOutline('red')
         target.draw(window)
-        
+
         # Make Ball
         point = graphics.Point(x_bounds/2, y_bounds/2)
         ball = graphics.Circle(point, 25)
         ball.setOutline('blue')
         ball.setFill('blue')
         ball.draw(window)
-    
+
         # Movement Loop
         while True:
 
@@ -153,11 +153,11 @@ try:
             # Convert sensor angle movement to ball movement
             if utilities.checkTolerance(teacher_tup, tolerance) and\
                     utilities.checkTolerance(student_tup, tolerance):
-                x_move = (percent_teacher*teacher_tup[1]+percent_student\
-                          *student_tup[1]) / (2*pi/4) * 10
-                y_move = (percent_teacher*teacher_tup[2]+percent_student\
-                          *student_tup[2]) / (2*pi/4) * 10
-                    
+                x_move = (percent_teacher*teacher_tup[1]+percent_student
+                          * student_tup[1]) / (2*pi/4) * 10
+                y_move = (percent_teacher*teacher_tup[2]+percent_student
+                          * student_tup[2]) / (2*pi/4) * 10
+
                 # print('{},{}'.format(round(x_move,2),round(y_move,2)))
             else:
                 x_move = 0
@@ -168,12 +168,12 @@ try:
                 x_move = speed_limit * (x_move/x_move)
             if abs(y_move) > speed_limit:
                 y_move = speed_limit * (y_move/y_move)
-                
+
             # Move ball, record motion within object
             ball.move(-x_move, -y_move)
             ball.x_center += x_move
             ball.y_center += y_move
-            
+
             # Respawns ball in center of window if out of bounds
             if ball.getCenter().x > x_bounds or ball.getCenter().y > y_bounds\
                     or ball.getCenter().x < 0 or ball.getCenter().y < 0:
@@ -199,11 +199,12 @@ try:
 
             time = perf_counter()-start
             utilities.writeData(file, time, teacher_tup, student_tup,
-                                difference_tup, intensity, angle, score, ball, target, 2)
+                                difference_tup, intensity, angle, score, ball,
+                                target, 2)
 
     window.close()
     utilities.close([teacher, student, dongle])
-    print('\nYour time is {}.'.format(round(time,2)))
+    print('\nYour time is {}.'.format(round(time, 2)))
 
 except KeyboardInterrupt:
 
@@ -211,14 +212,13 @@ except KeyboardInterrupt:
     try:
         win.close()
         utilities.close([teacher, student, dong])
-        print('\nYour time is {}.'.format(round(time,2)))
+        print('\nYour time is {}.'.format(round(time, 2)))
 
     except NameError:
         # Will execute if setup not completed
         utilities.close([dongle])
-        print('\nYour time is {}.'.format(round(time,2)))
-        
+        print('\nYour time is {}.'.format(round(time, 2)))
+
     except PermissionError:
         # Forgot to close the CSV
         utilities.close([dongle])
-

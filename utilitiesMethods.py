@@ -119,11 +119,11 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
             commandTime = perf_counter()-start
             play(index=index, intensity=intensity,
                  duration=0.5, iteration=iteration)
-            
+
             # Generate command, send to client
             command = str(index)+str(intensity)
             conn.send(command.encode())
-            
+
         angle = angle_dict[index]
 
     else:
@@ -182,8 +182,8 @@ def getPercent():
     key = input('Enter teacher control proportion(%)>>')
     percent_teacher = float(key)*0.01
     percent_student = 1-percent_teacher
-    
-    return  percent_teacher, percent_student
+
+    return percent_teacher, percent_student
 
 
 def getDevices():
@@ -214,7 +214,7 @@ def getDevices():
 
     print('Teacher battery at {}%'.format(percent1))
     print('Student battery at {}%'.format(percent2))
-    
+
     # Tare and start data streaming
     device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
     device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
@@ -260,10 +260,10 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
     """
     # Teacher's haptics is always 180 degrees opposite student
     if angle > 0:
-        angle_teacher = angle +pi
+        angle_teacher = angle + pi
     else:
         angle_teacher = 0
-        
+
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
 
