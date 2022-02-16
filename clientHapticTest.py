@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
+Client Haptic Test
+
 Created on Mon Feb 14 20:19:39 2022
 
-@author:
+@author: Ben Toaz
 """
 
 import socket
@@ -13,7 +15,7 @@ import utilitiesMethods as utility
 s = socket.socket()
  
 # Initialize the host
-host = "35.12.209.103"
+host = "35.12.209.242"
  
 # Initialize the port
 port = 8080
@@ -25,8 +27,12 @@ print("Connected to Server.")
  
 
 rvs_haptic_dict = {'d': "MoveLeft", 'a': 'MoveRight', 's': "MoveForward",
-                'w': 'MoveBack', '4': 'ForwardLeft', '3': 'ForwardRight', 
-                '2': 'BackLeft','1': 'BackRight'}
+                'w': 'MoveBack', 'sd': 'ForwardLeft', 'sa': 'ForwardRight', 
+                'wd': 'BackLeft','wa': 'BackRight'}
+
+# Switches index key to new index value
+rvs_index_dict = {'d': "a", 'a': 'd', 's': "w", 'w': 's', 'sd': 'wa', 'sa': 'wd', 
+                'wd': 'sa','wa': 'sd'}
 
 # Picks Set of Haptic Feedback
 iteration = 4
@@ -39,12 +45,17 @@ for value in rvs_haptic_dict.values():
 while(True):
     # receive the command from master program
     command = s.recv(1024)
+    # Command is string of 1-2 letters and intensity int
     command = command.decode()
     
     try:
-        intensity = int(command[-1])
-        index = command[0,2]
-    except ValueError:    
+        # Check if second character is an int, if so index is 1 letter long
+        int(command[1])
+        intensity = float(command[1:])
         index = command[0]
+    except ValueError:    
+        # Index is 2 letters long
+        intensity = float(command[2:])
+        index = command[0:2]
     
-    utility.play(command)
+    utility.play(index=rvs_index_dict[index], intensity=intensity)
