@@ -7,6 +7,7 @@ Created on Mon Feb 14 20:19:39 2022
 
 import socket
 from bhaptics import better_haptic_player as player
+import utilitiesMethods as utility
 
 # Initialize s to socket
 s = socket.socket()
@@ -34,17 +35,16 @@ player.initialize()
 # Load Tact files from directory
 for value in rvs_haptic_dict.values():
     player.register(value+str(iteration), value+str(iteration)+".tact")
-
-# Feedback options
-def play(index):
-
-    # Find indicated motion
-    if index in rvs_haptic_dict:
-        print('\n'+rvs_haptic_dict[index])
-        player.submit_registered(rvs_haptic_dict[index]+str(iteration))
         
 while(True):
     # receive the command from master program
     command = s.recv(1024)
     command = command.decode()
-    play(command)
+    
+    try:
+        intensity = int(command[-1])
+        index = command[0,2]
+    except ValueError:    
+        index = command[0]
+    
+    utility.play(command)
