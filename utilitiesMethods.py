@@ -94,7 +94,7 @@ def play(index='w', intensity=1, duration=0.5, iteration=4):
             rotation_option={"offsetAngleX": 0, "offsetY": 0})
 
 
-def advancedPlay(index, difference_tup, start, commandTime, iteration):
+def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording.
@@ -119,6 +119,8 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration):
             commandTime = perf_counter()-start
             play(index=index, intensity=intensity,
                  duration=0.5, iteration=iteration)
+            command = str(index)+str(intensity)
+            conn.send(command.encode())
         angle = angle_dict[index]
 
     else:

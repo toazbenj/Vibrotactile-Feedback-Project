@@ -50,6 +50,7 @@ from random import randint
 import csv
 from math import sin
 from math import cos
+import socket
 
 angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
               'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
@@ -58,6 +59,17 @@ theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 rand_lst = []
 
 try:
+    # Link to 2nd computer
+    s = socket.socket()
+    host = socket.gethostname()
+    port = 8080
+
+    s.bind(('', port))
+    print("waiting for connections...")
+    s.listen()
+    conn, addr = s.accept()
+    print(addr, "is connected to server")
+    
     # Make Window
     x_bounds = 750
     y_bounds = 750
@@ -136,7 +148,7 @@ try:
 
             # Play haptics, return values for recording
             angle, intensity, commandTime = utilities.advancedPlay(
-                index, difference_tup, start, commandTime, iteration)
+                index, difference_tup, start, commandTime, iteration, conn)
 
             # Convert sensor angle movement to ball movement
             if utilities.checkTolerance(teacher_tup, tolerance) and\
