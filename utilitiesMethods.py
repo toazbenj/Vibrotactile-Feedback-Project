@@ -12,7 +12,7 @@ Utilities Methods for Yosh Labs Sensors and bHaptics Tactsuit
 
     advancedPlay
         Scale haptic intensity, play haptics, maintain distance between buzzes,
-        return values for recording
+        return values for recording, send command to teacher client
 
     getIndex
         Select index for given direction moved beyond tolerance

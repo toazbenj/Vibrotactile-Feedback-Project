@@ -3,6 +3,7 @@
 Tandem Control Game
 
     Try
+        Link to 2nd computer
         Make graphics window
         Register and tare sensors
         Register haptic files
