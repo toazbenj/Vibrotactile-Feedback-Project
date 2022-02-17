@@ -108,7 +108,7 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
             check_coord = 2
 
         # Modulate intensity based on assumed max movement angle
-        intensity = abs(difference_tup[check_coord])/(pi/2)
+        intensity = abs(difference_tup[check_coord])/(pi/6)
         # Can't exceed 1
         if intensity > 1:
             intensity = 1

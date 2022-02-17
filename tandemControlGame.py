@@ -89,7 +89,7 @@ try:
     time = 0
     start = perf_counter()
     commandTime = 0
-    tolerance = pi/96
+    tolerance = pi/48
     miss_margin = 10
     speed_limit = 15
     score = 0
@@ -107,6 +107,7 @@ try:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(header)
 
+    # Generates random list of rotation angles
     for i in theta_lst:
         position = randint(0, 8)
         try:
@@ -116,7 +117,7 @@ try:
         except IndexError:
             rand_lst.append(i)
 
-    # Main Loop, randomly generates 8 targets
+    # Main Loop, generates 8 targets from rotation angles
     for i in rand_lst:
         # Make target
         x_coord = x_bounds * (1/2) + radius * (cos(i))
@@ -152,14 +153,18 @@ try:
                 index, difference_tup, start, commandTime, iteration, conn)
 
             # Convert sensor angle movement to ball movement
-            if utilities.checkTolerance(teacher_tup, tolerance) and\
+            if utilities.checkTolerance(teacher_tup, tolerance) or\
                     utilities.checkTolerance(student_tup, tolerance):
+                
+                # Scaling factors subjective for moderate difficulty
                 x_move = (percent_teacher*teacher_tup[1]+percent_student
                           * student_tup[1]) / (2*pi/4) * 10
+                
                 y_move = (percent_teacher*teacher_tup[2]+percent_student
                           * student_tup[2]) / (2*pi/4) * 10
 
                 # print('{},{}'.format(round(x_move,2),round(y_move,2)))
+                
             else:
                 x_move = 0
                 y_move = 0
@@ -206,24 +211,31 @@ try:
     window.close()
     utilities.close([teacher, student, dongle])
     print('\nYour time is {}.'.format(round(time, 2)))
-
+    
+    # Ends program on client
+    conn.close()
+    
 except KeyboardInterrupt:
 
     # For manual shutdown
     try:
+        conn.close()
         win.close()
         utilities.close([teacher, student, dong])
         print('\nYour time is {}.'.format(round(time, 2)))
-
+        
     except NameError:
         # Will execute if setup not completed
+        conn.close()
         utilities.close([dongle])
         print('\nYour time is {}.'.format(round(time, 2)))
-
+        
     except PermissionError:
         # Forgot to close the CSV
+        conn.close()
         utilities.close([dongle])
         
     except OSError:
+        conn.close()
         utilities.close([dongle])
         
