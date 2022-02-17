@@ -223,3 +223,7 @@ except KeyboardInterrupt:
     except PermissionError:
         # Forgot to close the CSV
         utilities.close([dongle])
+        
+    except OSError:
+        utilities.close([dongle])
+        
