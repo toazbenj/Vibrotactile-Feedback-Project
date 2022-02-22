@@ -25,18 +25,26 @@ Tandem Control Game
         Close window
         Close sensors
         Display Score
-
+        Cut client connection
+        
     Except KeyboadInterrupt
-        Try
-            Close window
-            Close sensors
-            Display Score
-
-        Except NameError
-            Close window
-            Close dongle
-            Display Score
-
+        Cut client connection
+        Close window
+        Close sensors
+        Display message
+       
+    Except NameError
+        Cut client connection
+        Close window
+        Close dongle
+        Display message
+    
+    Except PermissionError
+        Cut client connection
+        Close window
+        Close dongle
+        Display message
+        
 Reference: http://anh.cs.luc.edu/handsonPythonTutorial/graphics.html
 
 Created on Thu Dec 23 08:19:17 2021
@@ -53,27 +61,23 @@ from math import sin
 from math import cos
 import socket
 
-angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
-              'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
-
 theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 rand_lst = []
 
 try:
     # Link to 2nd computer
-    s = socket.socket()
-    host = socket.gethostname()
+    socket = socket.socket()
     port = 8080
 
-    s.bind(('', port))
+    socket.bind(('', port))
     print("waiting for connections...")
-    s.listen()
-    conn, addr = s.accept()
-    print(addr, "is connected to server")
+    socket.listen()
+    connection, address = socket.accept()
+    print(address, "is connected to server")
 
     # Make Window
-    x_bounds = 750
-    y_bounds = 750
+    x_bounds = 650
+    y_bounds = 650
     window = graphics.GraphWin(width=x_bounds, height=y_bounds)
 
     # Register haptic files
@@ -150,7 +154,7 @@ try:
 
             # Play haptics, return values for recording
             angle, intensity, commandTime = utilities.advancedPlay(
-                index, difference_tup, start, commandTime, iteration, conn)
+                index, difference_tup, start, commandTime, iteration, connection)
 
             # Convert sensor angle movement to ball movement
             if utilities.checkTolerance(teacher_tup, tolerance) or\
@@ -207,35 +211,30 @@ try:
             utilities.writeData(file, time, teacher_tup, student_tup,
                                 difference_tup, intensity, angle, score, ball,
                                 target, 2)
-
+            
+    connection.close()
     window.close()
-    utilities.close([teacher, student, dongle])
+    utilities.close(dongle)
     print('\nYour time is {}.'.format(round(time, 2)))
     
-    # Ends program on client
-    conn.close()
-    
 except KeyboardInterrupt:
-
     # For manual shutdown
-    try:
-        conn.close()
-        win.close()
-        utilities.close([teacher, student, dong])
-        print('\nYour time is {}.'.format(round(time, 2)))
+    connection.close()
+    window.close()
+    utilities.close(dongle)
+    print('Manual shutdown')
+    print('\nYour time is {}.'.format(round(time, 2)))
         
-    except NameError:
-        # Will execute if setup not completed
-        conn.close()
-        utilities.close([dongle])
-        print('\nYour time is {}.'.format(round(time, 2)))
-        
-    except PermissionError:
-        # Forgot to close the CSV
-        conn.close()
-        utilities.close([dongle])
-        
-    except OSError:
-        conn.close()
-        utilities.close([dongle])
-        
+except NameError:
+    # Will execute if setup not completed
+    connection.close()
+    window.close()
+    utilities.close(dongle)
+    print('Setup incomplete')
+    
+except PermissionError:
+    # Forgot to close the CSV
+    connection.close()
+    window.close()
+    utilities.close(dongle)
+    print('Close CSV')

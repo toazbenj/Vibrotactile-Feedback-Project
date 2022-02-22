@@ -94,7 +94,8 @@ def play(index='w', intensity=1, duration=0.5, iteration=4):
             rotation_option={"offsetAngleX": 0, "offsetY": 0})
 
 
-def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
+def advancedPlay(index, difference_tup, start, commandTime, iteration,
+                 connection):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording, send index and intesity to teacher client.
@@ -122,7 +123,7 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration, conn):
 
             # Generate command, send to client
             command = str(index)+str(intensity)
-            conn.send(command.encode())
+            connection.send(command.encode())
 
         angle = angle_dict[index]
 
@@ -244,11 +245,10 @@ def checkTolerance(check_tup, tolerance):
         return False
 
 
-def close(device_lst):
+def close(device):
     """Close all devices so next program can run"""
-    for d in device_lst:
-        d.close()
-    print('Devices closed.')
+    device.close()
+    print('Devices closed')
 
 
 def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
@@ -334,3 +334,4 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return True
     else:
         return False
+    
