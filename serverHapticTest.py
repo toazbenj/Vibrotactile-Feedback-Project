@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
+Server Haptic Test
+
+Example for linking to 2nd computer and sending string 
+to be interpreted as haptics.
+
 Created on Mon Feb 14 20:19:19 2022
 
-@author: Lynn
+@author: Ben Toaz
 """
 
 import socket
@@ -62,7 +67,7 @@ while True:
     key = keyboard.read_key()
     index = key.lower()
 
-    # Sentinel Value
+    # Sentinel Values
     if index == '.':
         print("End Sequence")
         break
@@ -74,3 +79,4 @@ while True:
     command = str(index)
     conn.send(command.encode())
 
+conn.close()
