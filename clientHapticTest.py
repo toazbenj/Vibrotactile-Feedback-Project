@@ -2,6 +2,9 @@
 """
 Client Haptic Test
 
+Example for linking to server computer and receiving command string to 
+interpret as haptics.
+
 Created on Wed Feb 16 13:17:03 2022
 @author: toazbenj
 """
@@ -14,7 +17,7 @@ import utilitiesMethods as utility
 s = socket.socket()
  
 # Initialize the host
-host = "35.12.209.242"
+host = "35.12.209.106"
  
 # Initialize the port
 port = 8080
@@ -42,3 +45,4 @@ while(True):
     command = s.recv(1024)
     command = command.decode()
     utility.play(command)
+    
