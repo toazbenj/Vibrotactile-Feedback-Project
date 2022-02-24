@@ -31,7 +31,7 @@ rvs_index_dict = {'d': "a", 'a': 'd', 's': "w", 'w': 's', 'sd': 'wa',
                   'sa': 'wd', 'wd': 'sa', 'wa': 'sd'}
 
 # Initialize host and port
-host = "35.12.209.106"
+host = "35.12.209.238"
 port = 8080
 
 # Bind socket with port and host
