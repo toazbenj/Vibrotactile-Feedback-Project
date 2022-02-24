@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Utilities Methods for Yosh Labs Sensors and bHaptics Tactsuit
+Utility Methods for Yosh Labs Sensors and bHaptics Tactsuit
 
     register
         Turn on haptic player, register all haptic files in dictionary
@@ -259,8 +259,10 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
     anything else will result in writing with score (followMeGame)
     """
     # Teacher's haptics is always 180 degrees opposite student
-    if angle > 0:
+    if angle > 0 and angle <= pi:
         angle_teacher = angle + pi
+    elif angle > pi:
+        angle_teacher = angle - pi
     else:
         angle_teacher = 0
 

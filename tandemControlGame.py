@@ -99,7 +99,7 @@ try:
     score = 0
     radius = 3/10*x_bounds
     index = ''
-    file = 'gameDemo.csv'
+    file = 'gameDemo2.csv'
 
     header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
               'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
