@@ -54,16 +54,9 @@ while(True):
     # Command is string of 1-2 letters and intensity float
     command = command.decode()
 
-    try:
-        # Check if second character is an int, if so index is 1 letter long
-        int(command[1])
-        # Grab all intensity digits after index
-        intensity = float(command[1:])
-        index = command[0]
+    command = command.split('-')
+    raw_intensity = float(command[0])
+    index = command[1]
+    teacher_intensity = float(command[2])
 
-    except ValueError:
-        # Index is 2 letters long
-        intensity = float(command[2:])
-        index = command[0:2]
-
-    utility.play(index=rvs_index_dict[index], intensity=intensity)
+    utility.play(index=rvs_index_dict[index], intensity=raw_intensity*teacher_intensity)

@@ -95,7 +95,7 @@ def play(index='w', intensity=1, duration=0.5, iteration=4):
 
 
 def advancedPlay(index, difference_tup, start, commandTime, iteration,
-                 connection):
+                 connection, teacher_intensity, student_intensity):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording, send index and intesity to teacher client.
@@ -109,20 +109,24 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
             check_coord = 2
 
         # Modulate intensity based on assumed max movement angle
-        intensity = abs(difference_tup[check_coord])/(pi/6)
+        raw_intensity = abs(difference_tup[check_coord])/(pi/6)
         # Can't exceed 1
-        if intensity > 1:
-            intensity = 1
+        if raw_intensity > 1:
+            raw_intensity = 1
 
         # Measures time since last buzz => maintains gap
         time = perf_counter()-start
         if time - commandTime > 0.5:
             commandTime = perf_counter()-start
-            play(index=index, intensity=intensity,
+            
+            # Play for student
+            play(index=index, raw_intensity=raw_intensity*student_intensity,
                  duration=0.5, iteration=iteration)
 
             # Generate command, send to client
-            command = str(index)+str(intensity)
+            command = str(teacher_intensity)+'-'+str(index)+'-'+str(raw_intensity)
+            
+            # Play for teacher
             connection.send(command.encode())
 
         angle = angle_dict[index]
@@ -130,9 +134,9 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
     else:
         # No haptics => Intensity=0, Angle=0
         angle = 0
-        intensity = 0
+        raw_intensity = 0
 
-    return angle, intensity, commandTime
+    return angle, raw_intensity, commandTime
 
 
 def getIndex(difference_tup, tolerance):
@@ -178,13 +182,17 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-def getPercent():
-    " Receive/calculate the amount of cursor control for student/teacher"
-    key = input('Enter teacher control proportion(%)>>')
-    percent_teacher = float(key)*0.01
-    percent_student = 1-percent_teacher
+def getSharing():
+    " Receive/calculate the amount of cursor control and intensity for student/teacher"
+    key = input('Enter student control proportion(%)>>')
+    student_control = float(key)*0.01
+    teacher_control = 1-student_control
+    
+    # Amount of intensity is inverse of amount of control 
+    student_intensity = teacher_control
+    teacher_intensity = student_control
 
-    return percent_teacher, percent_student
+    return teacher_control, student_control, teacher_intensity, student_intensity 
 
 
 def getDevices():
@@ -251,7 +259,8 @@ def close(device):
     print('Devices closed')
 
 
-def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
+def writeData(file, time, teacher_tup, student_tup, difference_tup, 
+              raw_intensity, teacher_intensity, student_intensity,
               angle, score, ball, target, mode):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
@@ -280,7 +289,7 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
                                 str(round(difference_tup[0], 3)),
                                 str(round(difference_tup[1], 3)),
                                 str(round(difference_tup[2], 3)),
-                                str(round(intensity, 3)),
+                                str(round(raw_intensity, 3)),
                                 str(round(angle, 2))])
 
         else:
@@ -294,7 +303,8 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup, intensity,
                                 str(round(difference_tup[0], 3)),
                                 str(round(difference_tup[1], 3)),
                                 str(round(difference_tup[2], 3)),
-                                str(round(intensity, 3)),
+                                str(round(raw_intensity*teacher_intensity, 3)),
+                                str(round(raw_intensity*student_intensity, 3)),
                                 str(round((angle_teacher), 2)),
                                 str(round(angle, 2)),
                                 str(round(ball.x_center)),

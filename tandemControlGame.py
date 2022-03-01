@@ -84,7 +84,7 @@ try:
     iteration = 4
     utilities.register(iteration)
 
-    percent_teacher, percent_student = utilities.getPercent()
+    teacher_control, student_control, teacher_intensity, student_intensity  = utilities.getPercent()
 
     # Register and Tare Sensors
     teacher, student, dongle, = utilities.getDevices()
@@ -103,8 +103,9 @@ try:
 
     header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
               'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
-              'Difference-z', 'Intensity', 'Angle Teacher', 'Angle Student',
-              'Ball-x', 'Ball-y', 'Target-x', 'Target-y', 'Score']
+              'Difference-z', 'Teacher Intensity', 'Student Intensity', 
+              'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
+              'Target-y', 'Score']
 
     # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
@@ -153,18 +154,18 @@ try:
             index = utilities.getIndex(difference_tup, tolerance)
 
             # Play haptics, return values for recording
-            angle, intensity, commandTime = utilities.advancedPlay(
-                index, difference_tup, start, commandTime, iteration, connection)
+            angle, raw_intensity, commandTime = utilities.advancedPlay(
+                index, difference_tup, start, commandTime, iteration, connection, teacher_intensity, student_intensity)
 
             # Convert sensor angle movement to ball movement
             if utilities.checkTolerance(teacher_tup, tolerance) or\
                     utilities.checkTolerance(student_tup, tolerance):
                 
                 # Scaling factors subjective for moderate difficulty
-                x_move = (percent_teacher*teacher_tup[1]+percent_student
+                x_move = (teacher_control*teacher_tup[1]+student_control
                           * student_tup[1]) / (2*pi/4) * 10
                 
-                y_move = (percent_teacher*teacher_tup[2]+percent_student
+                y_move = (teacher_control*teacher_tup[2]+student_control
                           * student_tup[2]) / (2*pi/4) * 10
 
                 # print('{},{}'.format(round(x_move,2),round(y_move,2)))
@@ -209,7 +210,7 @@ try:
 
             time = perf_counter()-start
             utilities.writeData(file, time, teacher_tup, student_tup,
-                                difference_tup, intensity, angle, score, ball,
+                                difference_tup, raw_intensity, teacher_intensity, student_intensity, angle, score, ball,
                                 target, 2)
             
     connection.close()
