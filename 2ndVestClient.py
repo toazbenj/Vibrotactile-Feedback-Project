@@ -31,7 +31,7 @@ rvs_index_dict = {'d': "a", 'a': 'd', 's': "w", 'w': 's', 'sd': 'wa',
                   'sa': 'wd', 'wd': 'sa', 'wa': 'sd'}
 
 # Initialize host and port
-host = "35.12.209.238"
+host = "35.12.209.177"
 port = 8080
 
 # Bind socket with port and host
@@ -46,17 +46,20 @@ player.initialize()
 # Load Tact files from directory
 for value in rvs_haptic_dict.values():
     player.register(value+str(iteration), value+str(iteration)+".tact")
-
-# Haptics loop
-while(True):
-    # Receive command from master program
-    command = s.recv(1024)
-    # Command is string of 1-2 letters and intensity float
-    command = command.decode()
-
-    command = command.split('-')
-    raw_intensity = float(command[0])
-    index = command[1]
-    teacher_intensity = float(command[2])
-
-    utility.play(index=rvs_index_dict[index], intensity=raw_intensity*teacher_intensity)
+try:
+    # Haptics loop
+    while(True):
+        # Receive command from master program
+        command = s.recv(1024)
+        # Command is string of 1-2 letters and intensity float
+        command = command.decode()
+    
+        command = command.split('-')
+        raw_intensity = float(command[0])
+        index = command[1]
+        teacher_intensity = float(command[2])
+    
+        utility.play(index=rvs_index_dict[index], intensity=raw_intensity*teacher_intensity)
+        
+except ValueError:
+    print('Disconnected')
