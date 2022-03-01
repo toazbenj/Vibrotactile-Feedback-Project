@@ -120,7 +120,7 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
             commandTime = perf_counter()-start
             
             # Play for student
-            play(index=index, raw_intensity=raw_intensity*student_intensity,
+            play(index=index, intensity=(raw_intensity*student_intensity),
                  duration=0.5, iteration=iteration)
 
             # Generate command, send to client

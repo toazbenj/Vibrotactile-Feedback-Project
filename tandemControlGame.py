@@ -84,7 +84,7 @@ try:
     iteration = 4
     utilities.register(iteration)
 
-    teacher_control, student_control, teacher_intensity, student_intensity  = utilities.getPercent()
+    teacher_control, student_control, teacher_intensity, student_intensity  = utilities.getSharing()
 
     # Register and Tare Sensors
     teacher, student, dongle, = utilities.getDevices()
