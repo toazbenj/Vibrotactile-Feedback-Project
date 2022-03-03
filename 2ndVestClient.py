@@ -31,15 +31,8 @@ rvs_index_dict = {'d': "a", 'a': 'd', 's': "w", 'w': 's', 'sd': 'wa',
                   'sa': 'wd', 'wd': 'sa', 'wa': 'sd'}
 
 # Initialize host and port
-<<<<<<< HEAD
-<<<<<<< Updated upstream
+
 host = "35.12.209.238"
-=======
-host = "35.9.134.188"
->>>>>>> Stashed changes
-=======
-host = "35.12.209.177"
->>>>>>> 03903a11779e23a597dc8f2dd6baa23c7f09ef6a
 port = 8080
 
 # Bind socket with port and host

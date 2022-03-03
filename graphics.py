@@ -642,12 +642,13 @@ class Oval(_BBox):
 class Circle(Oval):
     
     def __init__(self, center, radius):
-        p1 = Point(center.x-radius, center.y-radius)
-        p2 = Point(center.x+radius, center.y+radius)
-        Oval.__init__(self, p1, p2)
+        
         self.radius = radius
         self.x_center = center.x
         self.y_center = center.y
+        p1 = Point(center.x-radius, center.y-radius)
+        p2 = Point(center.x+radius, center.y+radius)
+        Oval.__init__(self, p1, p2)
 
     def __repr__(self):
         return "Circle({}, {})".format(str(self.getCenter()), str(self.radius))

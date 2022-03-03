@@ -109,6 +109,7 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
             check_coord = 2
 
         # Modulate intensity based on assumed max movement angle
+        # replace scaling with variable
         raw_intensity = abs(difference_tup[check_coord])/(pi/6)
         # Can't exceed 1
         if raw_intensity > 1:
@@ -116,6 +117,8 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
 
         # Measures time since last buzz => maintains gap
         time = perf_counter()-start
+        
+        # replace interval with variable
         if time - commandTime > 0.5:
             commandTime = perf_counter()-start
             
