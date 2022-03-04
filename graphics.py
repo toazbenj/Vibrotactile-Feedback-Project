@@ -521,6 +521,29 @@ class GraphicsObject:
             self.canvas.move(self.id, x, y)
             if canvas.autoflush:
                 _root.update()
+                
+    def movePosition(self,x,y):
+
+        """move object dx units in x direction and dy units in y
+        direction"""
+        
+        canvas = self.canvas
+        
+        if canvas and not canvas.isClosed():
+            
+        #     trans = canvas.trans
+        #     if trans:
+        #         x = dx/ trans.xscale 
+        #         y = -dy / trans.yscale
+        #     else:
+        #         x = dx
+        #         y = dy
+        #     self.canvas.move(self.id, x, y)
+            self.center.x = x
+            self.center.y = y
+        
+            if canvas.autoflush:
+                _root.update()
            
     def _reconfig(self, option, setting):
         # Internal method for changing configuration of the object
