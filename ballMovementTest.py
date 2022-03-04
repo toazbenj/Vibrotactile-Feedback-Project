@@ -104,8 +104,7 @@ try:
         if y_pos < -y_bounds:
             y_pos = 0
         
-        center = graphics.Point(x_pos,y_pos)
-        ball.center = center
+        ball.movePosition(x_pos, y_pos)
         
         # # From move function in graphics module
         # canvas = ball.canvas

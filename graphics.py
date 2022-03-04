@@ -539,6 +539,7 @@ class GraphicsObject:
         #         x = dx
         #         y = dy
         #     self.canvas.move(self.id, x, y)
+        
             self.center.x = x
             self.center.y = y
         
