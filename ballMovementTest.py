@@ -104,7 +104,7 @@ try:
         if y_pos < -y_bounds:
             y_pos = 0
         
-        ball.movePosition(x_pos, y_pos)
+        ball.move()
         
         # # From move function in graphics module
         # canvas = ball.canvas

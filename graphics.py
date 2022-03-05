@@ -540,8 +540,8 @@ class GraphicsObject:
         #         y = dy
         #     self.canvas.move(self.id, x, y)
         
-            self.center.x = x
-            self.center.y = y
+            self.x_center = x
+            self.y_center = y
         
             if canvas.autoflush:
                 _root.update()
