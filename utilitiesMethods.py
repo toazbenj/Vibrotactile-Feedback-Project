@@ -47,6 +47,7 @@ import csv
 from math import pi
 from time import perf_counter
 from time import sleep
+import graphics
 
 # Dict of file names matched with keystrokes
 # Version 3
@@ -349,4 +350,86 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return True
     else:
         return False
+    
+    
+def velocityMove(ball, teacher_tup, student_tup, teacher_control, 
+                 student_control, tolerance, window, speed_limit, x_bounds,
+                 y_bounds):
+    """
+    Calculate pixel velocity of ball object based on weighted average 
+    of teacher and student movements. Limit movement based on speed limit, 
+    respawn ball in center if out of bounds.
+    """
+    
+    # Convert sensor angle movement to ball movement
+    if checkTolerance(teacher_tup, tolerance) or\
+            checkTolerance(student_tup, tolerance):
+        
+        # Scaling factors subjective for moderate difficulty
+        x_move = (teacher_control*teacher_tup[1]+student_control
+                  * student_tup[1]) / (2*pi/4) * 10
+        
+        y_move = (teacher_control*teacher_tup[2]+student_control
+                  * student_tup[2]) / (2*pi/4) * 10
+        
+    else:
+        x_move = 0
+        y_move = 0
+
+    # If speed limit exceeded, sets speed to limit in same direction
+    if abs(x_move) > speed_limit:
+        x_move = speed_limit * (x_move/x_move)
+    if abs(y_move) > speed_limit:
+        y_move = speed_limit * (y_move/y_move)
+
+    # Move ball, record motion within object
+    ball.move(-x_move, -y_move)
+    ball.x_center += x_move
+    ball.y_center += y_move
+
+    # Respawns ball in center of window if out of bounds
+    if ball.getCenter().x > x_bounds or ball.getCenter().y > y_bounds\
+            or ball.getCenter().x < 0 or ball.getCenter().y < 0:
+
+        ball.undraw()
+
+        pt = graphics.Point(x_bounds/2, y_bounds/2)
+        ball = graphics.Circle(pt, 25)
+        ball.setOutline('blue')
+        ball.setFill('blue')
+        ball.draw(window)
+
+
+def positionMove(ball, teacher_tup, student_tup, teacher_control, 
+                 student_control, window, speed_limit, x_bounds,
+                 y_bounds, max_movement_angle):
+    """
+    Calculate poition of ball object in graphics window based on weighted average 
+    of teacher and student movements. Limit movement to within graphics window,
+    move ball to new position.
+    """
+    
+    # Convert sensor angle movement to ball movement
+    x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control) 
+              / (2*max_movement_angle) * x_bounds) + x_bounds/2
+    y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control) 
+              / (2*max_movement_angle) * y_bounds) + y_bounds/2
+        
+    # Graphics window barrier
+    if x_pos > x_bounds:
+        x_pos = x_bounds
+        
+    if x_pos < 0:
+        x_pos = 0
+       
+    if y_pos > y_bounds:
+        y_pos = y_bounds
+        
+    if y_pos < 0:
+        y_pos = 0
+    
+    # Move ball between current position and next calculated position
+    ball.move(x_pos-ball.x_center, y_pos-ball.y_center)   
+    ball.x_center = x_pos
+    ball.y_center = y_pos
     

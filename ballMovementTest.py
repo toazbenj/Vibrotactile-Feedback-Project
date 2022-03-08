@@ -83,7 +83,6 @@ try:
         # Position
         
         # Convert sensor angle movement to ball movement
-        # Very wrong, must fix
         x_pos = -(teacher_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
         y_pos = -(teacher_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
         
@@ -92,27 +91,23 @@ try:
         print('\n')
         print('{},{}'.format(round(teacher_tup[1],2),round(teacher_tup[2],2)))
         
+        # Graphics window barrier
         if x_pos > x_bounds:
             x_pos = x_bounds
             
-        if x_pos < -x_bounds:
+        if x_pos < 0:
             x_pos = 0
            
         if y_pos > y_bounds:
             y_pos = y_bounds
             
-        if y_pos < -y_bounds:
+        if y_pos < 0:
             y_pos = 0
         
-        ball.move()
-        
-        # # From move function in graphics module
-        # canvas = ball.canvas
-        # if canvas and not canvas.isClosed():
-        #     trans = canvas.trans
-        #     if canvas.autoflush:
-        #         # Figure out what's actually updating
-        #         _root.update()        
+        # Move ball between current position and next calculated position
+        ball.move(x_pos-ball.x_center, y_pos-ball.y_center)   
+        ball.x_center = x_pos
+        ball.y_center = y_pos
         
     dng_device.close()
     
