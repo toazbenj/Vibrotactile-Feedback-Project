@@ -9,6 +9,7 @@ Created on Tue Mar  1 14:24:14 2022
 import graphics
 from math import pi
 import threespace_api as ts_api
+import utilitiesMethods as utilities
 
 try:
     # Make Window
@@ -82,32 +83,36 @@ try:
         
         # Position
         
-        # Convert sensor angle movement to ball movement
-        x_pos = -(teacher_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
-        y_pos = -(teacher_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
+        # # Convert sensor angle movement to ball movement
+        # x_pos = -(teacher_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
+        # y_pos = -(teacher_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
         
-        print('\n')
-        print('{},{}'.format(round(x_pos,2),round(y_pos,2)))
-        print('\n')
-        print('{},{}'.format(round(teacher_tup[1],2),round(teacher_tup[2],2)))
+        # print('\n')
+        # print('{},{}'.format(round(x_pos,2),round(y_pos,2)))
+        # print('\n')
+        # print('{},{}'.format(round(teacher_tup[1],2),round(teacher_tup[2],2)))
         
-        # Graphics window barrier
-        if x_pos > x_bounds:
-            x_pos = x_bounds
+        # # Graphics window barrier
+        # if x_pos > x_bounds:
+        #     x_pos = x_bounds
             
-        if x_pos < 0:
-            x_pos = 0
+        # if x_pos < 0:
+        #     x_pos = 0
            
-        if y_pos > y_bounds:
-            y_pos = y_bounds
+        # if y_pos > y_bounds:
+        #     y_pos = y_bounds
             
-        if y_pos < 0:
-            y_pos = 0
+        # if y_pos < 0:
+        #     y_pos = 0
         
-        # Move ball between current position and next calculated position
-        ball.move(x_pos-ball.x_center, y_pos-ball.y_center)   
-        ball.x_center = x_pos
-        ball.y_center = y_pos
+        # # Move ball between current position and next calculated position
+        # ball.move(x_pos-ball.x_center, y_pos-ball.y_center)   
+        # ball.x_center = x_pos
+        # ball.y_center = y_pos
+        
+        utilities.positionMove(window=window,  x_bounds=x_bounds, y_bounds=y_bounds, 
+                     max_movement_angle=max_movement_angle, ball=ball, 
+                     student_tup=teacher_tup)
         
     dng_device.close()
     

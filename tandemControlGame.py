@@ -61,8 +61,24 @@ from math import sin
 from math import cos
 import socket
 
+# Sentinels/Conditions
+max_movement_angle = pi/4
+time = 0
+start = perf_counter()
+commandTime = 0
+tolerance = pi/48
+miss_margin = 10
+speed_limit = 15
+score = 0
+index = ''
+file = 'gameDemo3.csv'
 theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 rand_lst = []
+header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
+              'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
+              'Difference-z', 'Teacher Intensity', 'Student Intensity', 
+              'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
+              'Target-y', 'Score']
 
 try:
     # Link to 2nd computer
@@ -76,8 +92,10 @@ try:
     print(address, "is connected to server")
 
     # Make Window
-    x_bounds = 650
-    y_bounds = 650
+    bounds = 400
+    x_bounds = bounds
+    y_bounds = bounds
+    radius = 3/10*x_bounds
     window = graphics.GraphWin(width=x_bounds, height=y_bounds)
 
     # Register haptic files
@@ -88,24 +106,6 @@ try:
 
     # Register and Tare Sensors
     teacher, student, dongle, = utilities.getDevices()
-
-    # Sentinels/Conditions
-    time = 0
-    start = perf_counter()
-    commandTime = 0
-    tolerance = pi/48
-    miss_margin = 10
-    speed_limit = 15
-    score = 0
-    radius = 3/10*x_bounds
-    index = ''
-    file = 'gameDemo3.csv'
-
-    header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
-              'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
-              'Difference-z', 'Teacher Intensity', 'Student Intensity', 
-              'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
-              'Target-y', 'Score']
 
     # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
@@ -159,9 +159,10 @@ try:
                 connection, teacher_intensity, student_intensity)
             
             # Move ball 
-            velocityMove(ball, teacher_tup, student_tup, teacher_control, 
-                 student_control, tolerance, window, speed_limit, x_bounds,
-                 y_bounds)
+            utilities.positionMove(window,  x_bounds, y_bounds, 
+                                   max_movement_angle, ball, 
+                                   teacher_tup, student_tup, teacher_control, 
+                                   student_control)
 
             # Check if target is hit
             x_diff = abs(ball.getCenter().x-target.getCenter().x)

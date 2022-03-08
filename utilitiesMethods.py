@@ -400,21 +400,29 @@ def velocityMove(ball, teacher_tup, student_tup, teacher_control,
         ball.draw(window)
 
 
-def positionMove(ball, teacher_tup, student_tup, teacher_control, 
-                 student_control, window, speed_limit, x_bounds,
-                 y_bounds, max_movement_angle):
+def positionMove(window,  x_bounds, y_bounds, max_movement_angle, ball, 
+                 teacher_tup=0, student_tup=0, teacher_control=0, 
+                 student_control=0):
     """
     Calculate poition of ball object in graphics window based on weighted average 
     of teacher and student movements. Limit movement to within graphics window,
     move ball to new position.
     """
+    x_pos = -(student_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
+    y_pos = -(student_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
+
     
     # Convert sensor angle movement to ball movement
-    x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control) 
-              / (2*max_movement_angle) * x_bounds) + x_bounds/2
-    y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control) 
-              / (2*max_movement_angle) * y_bounds) + y_bounds/2
-        
+    # x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control)
+    #           / max_movement_angle * x_bounds) + x_bounds/2
+    # y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control) 
+    #           / max_movement_angle * y_bounds) + y_bounds/2
+    
+    print('\n')
+    print('{},{}'.format(round(x_pos,2),round(y_pos,2)))
+    print('\n')
+    print('{},{}'.format(round(student_tup[1],2),round(student_tup[2],2)))
+    
     # Graphics window barrier
     if x_pos > x_bounds:
         x_pos = x_bounds
