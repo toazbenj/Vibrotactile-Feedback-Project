@@ -44,6 +44,7 @@ try:
     teacher, student, dongle = utilities.getDevices()
 
     # Sentinels and Conditions
+    isFollowMe = True
     time = 0
     start = perf_counter()
     reps = 0
@@ -86,8 +87,10 @@ try:
 
         reps += 1
         time = perf_counter()-start
+        
+        # Unused arguments set to 0
         utilities.writeData(file, time, teacher_tup, student_tup,
-                            difference_tup, intensity, angle, 0, 1)
+                            difference_tup, intensity, 0, 0, angle, 0, 0, 0, isFollowMe, 0)
 
     utilities.close([teacher, student, dongle])
 

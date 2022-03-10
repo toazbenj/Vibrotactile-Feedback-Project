@@ -62,6 +62,7 @@ from math import cos
 import socket
 
 # Sentinels/Conditions
+isFollowMe = False
 max_movement_angle = pi/4
 time = 0
 start = perf_counter()
@@ -71,6 +72,7 @@ miss_margin = 10
 speed_limit = 15
 score = 0
 index = ''
+iteration = 4
 file = 'gameDemo3.csv'
 theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 rand_lst = []
@@ -81,16 +83,22 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
               'Target-y', 'Score']
 
 try:
-    # Link to 2nd computer
-    socket = socket.socket()
-    port = 8080
-
-    socket.bind(('', port))
-    print("waiting for connections...")
-    socket.listen()
-    connection, address = socket.accept()
-    print(address, "is connected to server")
-
+    # Get mode 
+    mode = utilities.getMode()
+    
+    if mode == 3:
+        # Link to 2nd computer
+        socket = socket.socket()
+        port = 8080
+    
+        socket.bind(('', port))
+        print("waiting for connections...")
+        socket.listen()
+        connection, address = socket.accept()
+        print(address, "is connected to server")
+    else:
+        connection = 0
+        
     # Make Window
     bounds = 400
     x_bounds = bounds
@@ -99,17 +107,22 @@ try:
     window = graphics.GraphWin(width=x_bounds, height=y_bounds)
 
     # Register haptic files
-    iteration = 4
     utilities.register(iteration)
-
-    teacher_control, student_control, teacher_intensity, student_intensity  = utilities.getSharing()
+    
+    # Control and intensity ratios
+    teacher_control, student_control, teacher_intensity, student_intensity  =\
+        utilities.getSharing(mode)
 
     # Register and Tare Sensors
-    teacher, student, dongle, = utilities.getDevices()
+    if mode == 1:
+        student, dongle, = utilities.getDevices(mode)
+    else:
+        teacher, student, dongle, = utilities.getDevices(mode)
 
     # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(['Mode', mode])
         csvwriter.writerow(header)
 
     # Generates random list of rotation angles
@@ -144,24 +157,30 @@ try:
         while True:
 
             # Get position data
-            teacher_tup = teacher.getStreamingBatch()
-            student_tup = student.getStreamingBatch()
-            difference_tup = difference_tup = (student_tup[0]-teacher_tup[0],
-                                               student_tup[1]-teacher_tup[1],
-                                               student_tup[2]-teacher_tup[2])
-
+            if mode == 1:
+                student_tup = student.getStreamingBatch()
+                teacher_tup = (0,0,0)
+                difference_tup = (0,0,0)
+                
+            else:
+                teacher_tup = teacher.getStreamingBatch()
+                student_tup = student.getStreamingBatch()
+                difference_tup = (student_tup[0]-teacher_tup[0],
+                                  student_tup[1]-teacher_tup[1],
+                                  student_tup[2]-teacher_tup[2])
+                
             # Select haptics direction
             index = utilities.getIndex(difference_tup, tolerance)
 
             # Play haptics, return values for recording
             angle, raw_intensity, commandTime = utilities.advancedPlay(
                 index, difference_tup, start, commandTime, iteration, 
-                connection, teacher_intensity, student_intensity)
+                connection, teacher_intensity, student_intensity, mode)
             
             # Move ball 
             utilities.positionMove(window,  x_bounds, y_bounds, 
-                                   max_movement_angle, ball, 
-                                   teacher_tup, student_tup, teacher_control, 
+                                   max_movement_angle, ball, teacher_tup, 
+                                   student_tup, teacher_control, 
                                    student_control)
 
             # Check if target is hit
@@ -177,17 +196,21 @@ try:
             # Record data
             time = perf_counter()-start
             utilities.writeData(file, time, teacher_tup, student_tup,
-                                difference_tup, raw_intensity, teacher_intensity, student_intensity, angle, score, ball,
-                                target, 2)
+                                difference_tup, raw_intensity, 
+                                teacher_intensity, student_intensity, angle,
+                                score, ball, target, isFollowMe)
             
-    connection.close()
+    if mode == 3:
+        connection.close()
+        
     window.close()
     utilities.close(dongle)
     print('\nYour time is {}.'.format(round(time, 2)))
     
 except KeyboardInterrupt:
     # For manual shutdown
-    connection.close()
+    if mode == 3:
+        connection.close()
     window.close()
     utilities.close(dongle)
     print('Manual shutdown')
@@ -195,14 +218,16 @@ except KeyboardInterrupt:
         
 except NameError:
     # Will execute if setup not completed
-    connection.close()
+    if mode == 3:
+        connection.close()
     window.close()
     utilities.close(dongle)
     print('Setup incomplete')
     
 except PermissionError:
-    # Forgot to close the CSV
-    connection.close()
+    # Forgot to close the CSV file
+    if mode == 3:
+        connection.close()
     window.close()
     utilities.close(dongle)
-    print('Close CSV')
+    print('Close CSV File')

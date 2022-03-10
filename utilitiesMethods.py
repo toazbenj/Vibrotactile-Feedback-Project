@@ -96,7 +96,7 @@ def play(index='w', intensity=1, duration=0.5, iteration=4):
 
 
 def advancedPlay(index, difference_tup, start, commandTime, iteration,
-                 connection, teacher_intensity, student_intensity):
+                 connection, teacher_intensity, student_intensity, mode):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording, send index and intesity to teacher client.
@@ -128,10 +128,11 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
                  duration=0.5, iteration=iteration)
 
             # Generate command, send to client
-            command = str(teacher_intensity)+'-'+str(index)+'-'+str(raw_intensity)
+            if mode == 3:
+                command = str(teacher_intensity)+'-'+str(index)+'-'+str(raw_intensity)
             
-            # Play for teacher
-            connection.send(command.encode())
+                # Play for teacher
+                connection.send(command.encode())
 
         angle = angle_dict[index]
 
@@ -186,20 +187,39 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-def getSharing():
+def getSharing(mode):
     " Receive/calculate the amount of cursor control and intensity for student/teacher"
-    key = input('Enter student control proportion(%)>>')
-    student_control = float(key)*0.01
-    teacher_control = 1-student_control
+    # No Teacher, No Haptics 
+    if mode == 1:
+        teacher_control = 0
+        student_control = 1
+        teacher_intensity = 0
+        student_intensity = 0
     
-    # Amount of intensity is inverse of amount of control 
-    student_intensity = teacher_control
-    teacher_intensity = student_control
+    # Teacher, No Haptics 
+    elif mode == 2:
+        key = input('Enter student control proportion(%)>>')
+        student_control = float(key)*0.01
+        teacher_control = 1-student_control
+        
+        # Amount of intensity is inverse of amount of control 
+        student_intensity = 0
+        teacher_intensity = 0
+        
+    #  Teacher, Haptics
+    else:
+        key = input('Enter student control proportion(%)>>')
+        student_control = float(key)*0.01
+        teacher_control = 1-student_control
+        
+        # Amount of intensity is inverse of amount of control 
+        student_intensity = teacher_control
+        teacher_intensity = student_control
 
     return teacher_control, student_control, teacher_intensity, student_intensity 
 
 
-def getDevices():
+def getDevices(mode):
     """
     Search for docked devices, make list, assign names and orientation,
     display battery levels, tare countdown, return devices
@@ -214,37 +234,60 @@ def getDevices():
 
     device_dict = {1: dng_device[0+offset], 3: dng_device[1+offset],
                    4: dng_device[2+offset]}
+    
+    if mode == 1:
+         key = input('Select student (1,3,4)>>')
+         device1 = device_dict[int(key)]
+         
+         percent1 = device1.getBatteryPercentRemaining()
+         print('Student battery at {}%'.format(percent1))
+         
+         device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+         
+         print("Taring in 5\n")
 
-    key = input('Select teacher (1,3,4)>>')
-    device1 = device_dict[int(key)]
+         for i in reversed(range(0, 5)):
+             sleep(1)
+             print(i)
+             print('\n')
 
-    key = input('Select student (1,3,4)>>')
-    device2 = device_dict[int(key)]
+         device1.tareWithCurrentOrientation()
+         
+         print('GO!\n')
 
-    # Display Battery Levels
-    percent1 = device1.getBatteryPercentRemaining()
-    percent2 = device2.getBatteryPercentRemaining()
-
-    print('Teacher battery at {}%'.format(percent1))
-    print('Student battery at {}%'.format(percent2))
-
-    # Tare and start data streaming
-    device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-    device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-
-    print("Taring in 5\n")
-
-    for i in reversed(range(0, 5)):
-        sleep(1)
-        print(i)
-        print('\n')
-
-    device1.tareWithCurrentOrientation()
-    device2.tareWithCurrentOrientation()
-
-    print('GO!\n')
-
-    return device1, device2, dng_device
+         return device1, dng_device
+     
+    else:
+        key = input('Select teacher (1,3,4)>>')
+        device1 = device_dict[int(key)]
+    
+        key = input('Select student (1,3,4)>>')
+        device2 = device_dict[int(key)]
+    
+        # Display Battery Levels
+        percent1 = device1.getBatteryPercentRemaining()
+        percent2 = device2.getBatteryPercentRemaining()
+    
+        print('Teacher battery at {}%'.format(percent1))
+        print('Student battery at {}%'.format(percent2))
+    
+        # Tare and start data streaming
+        device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+        device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+    
+        print("Taring in 5\n")
+    
+        for i in reversed(range(0, 5)):
+            sleep(1)
+            print(i)
+            print('\n')
+    
+        device1.tareWithCurrentOrientation()
+        device2.tareWithCurrentOrientation()
+    
+        print('GO!\n')
+    
+        return device1, device2, dng_device
 
 
 def checkTolerance(check_tup, tolerance):
@@ -253,23 +296,25 @@ def checkTolerance(check_tup, tolerance):
             or check_tup[2] > tolerance or check_tup[2] < -tolerance:
 
         return True
+    
     else:
+        
         return False
 
 
 def close(device):
-    """Close all devices so next program can run"""
+    """Close device so next program can run"""
     device.close()
-    print('Devices closed')
+    print('\nDevices closed')
 
 
 def writeData(file, time, teacher_tup, student_tup, difference_tup, 
               raw_intensity, teacher_intensity, student_intensity,
-              angle, score, ball, target, mode):
+              angle, score, ball, target, isFollowMe):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
-    so parameter of 1 for mode will write without a score (followMe) and
-    anything else will result in writing with score (followMeGame)
+    so parameter of true for isFollowMe will write without a score (followMe) and
+    anything else will result in writing with score (tandemControlGame)
     """
     # Teacher's haptics is always 180 degrees opposite student
     if angle > 0 and angle <= pi:
@@ -282,7 +327,7 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
 
-        if mode == 1:
+        if isFollowMe:
             csvwriter.writerow([str(round(time, 3)),
                                 str(round(teacher_tup[0], 3)),
                                 str(round(teacher_tup[1], 3)),
@@ -408,15 +453,15 @@ def positionMove(window,  x_bounds, y_bounds, max_movement_angle, ball,
     of teacher and student movements. Limit movement to within graphics window,
     move ball to new position.
     """
-    x_pos = -(student_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
-    y_pos = -(student_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
+    # x_pos = -(student_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
+    # y_pos = -(student_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
 
     
     # Convert sensor angle movement to ball movement
-    # x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control)
-    #           / max_movement_angle * x_bounds) + x_bounds/2
-    # y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control) 
-    #           / max_movement_angle * y_bounds) + y_bounds/2
+    x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control)
+              / max_movement_angle * x_bounds) + x_bounds/2
+    y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control) 
+              / max_movement_angle * y_bounds) + y_bounds/2
     
     print('\n')
     print('{},{}'.format(round(x_pos,2),round(y_pos,2)))
@@ -441,3 +486,12 @@ def positionMove(window,  x_bounds, y_bounds, max_movement_angle, ball,
     ball.x_center = x_pos
     ball.y_center = y_pos
     
+    
+def getMode():
+    options = "Modes: \n(1) No Teacher, No Haptics \n(2) Teacher, No Haptics \n(3) Teacher, Haptics"
+    print(options)
+    
+    mode_str = input('Select mode >>')
+    mode = int(mode_str)    
+    
+    return mode 
