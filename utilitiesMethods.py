@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Utility Methods for Yosh Labs Sensors and bHaptics Tactsuit
+    userInput
+            User input loop to handle incorrect entries
+    getMode
+        rompts user to select participant and haptic configuration
 
     register
         Turn on haptic player, register all haptic files in dictionary
@@ -17,9 +21,23 @@ Utility Methods for Yosh Labs Sensors and bHaptics Tactsuit
     getIndex
         Select index for given direction moved beyond tolerance
 
+    getSharing
+        Receive/calculate the amount of cursor control and intensity for
+        student/teacher
+
     getDevices
         Search for docked devices, make list, assign names and orientation,
         display battery levels, tare countdown, return devices
+
+    velocityMove
+        Calculate pixel velocity of ball object based on weighted average
+        of teacher and student movements. Limit movement based on speed limit,
+        respawn ball in center if out of bounds
+
+    positionMove
+        Calculate poition of ball object in graphics window based on weighted
+        average of teacher and student movements. Limit movement to within
+        graphics window, move ball to new position
 
     checkTolerance
         Determine if coordinates exceed tolerance
@@ -66,6 +84,43 @@ angle_dict = {'a': pi, 'wd': pi/4, 'd': 2*pi, 'wa': 3*pi/4, 'w': pi/2,
               'sa': 5*pi/4, 's': 3*pi/2, 'sd': 7*pi/4}
 
 
+def getMode():
+    """Prompts user to select participant and haptic configuration"""
+
+    options = "Modes: \
+        \n(1) No Teacher, No Haptics \
+        \n(2) Teacher, No Haptics \
+        \n(3) Teacher, Haptics"
+
+    print(options)
+
+    mode = userInput('Select mode >>')
+
+    return mode
+
+
+def userInput(prompt):
+    """User input loop to handle incorrect entries"""
+
+    isCorrect = False
+
+    while not isCorrect:
+
+        string = input(prompt)
+
+        try:
+            num = int(string)
+            isCorrect = True
+
+        except TypeError:
+            continue
+
+        except ValueError:
+            continue
+
+    return num
+
+
 def register(iteration):
     """
     Turn on haptic player, register all haptic files in dictionary
@@ -101,6 +156,9 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
     Scale haptic intensity, maintain time between buzzes, return values
     for recording, send index and intesity to teacher client.
     """
+    intensity_scale = pi/6
+    frequency_interval = 0.5
+
     if index in haptic_dict:
 
         # Decide which axis to check based on bigger difference
@@ -110,27 +168,27 @@ def advancedPlay(index, difference_tup, start, commandTime, iteration,
             check_coord = 2
 
         # Modulate intensity based on assumed max movement angle
-        # replace scaling with variable
-        raw_intensity = abs(difference_tup[check_coord])/(pi/6)
+        raw_intensity = abs(difference_tup[check_coord])/intensity_scale
         # Can't exceed 1
         if raw_intensity > 1:
             raw_intensity = 1
 
         # Measures time since last buzz => maintains gap
         time = perf_counter()-start
-        
+
         # replace interval with variable
-        if time - commandTime > 0.5:
+        if time - commandTime > frequency_interval:
             commandTime = perf_counter()-start
-            
+
             # Play for student
             play(index=index, intensity=(raw_intensity*student_intensity),
-                 duration=0.5, iteration=iteration)
+                 duration=frequency_interval, iteration=iteration)
 
             # Generate command, send to client
             if mode == 3:
-                command = str(teacher_intensity)+'-'+str(index)+'-'+str(raw_intensity)
-            
+                command = str(teacher_intensity)+'-'+str(index)+'-'+str(
+                    raw_intensity)
+
                 # Play for teacher
                 connection.send(command.encode())
 
@@ -188,35 +246,40 @@ def getIndex(difference_tup, tolerance):
 
 
 def getSharing(mode):
-    " Receive/calculate the amount of cursor control and intensity for student/teacher"
-    # No Teacher, No Haptics 
+    """
+    Receive/calculate the amount of cursor control and intensity for
+    student/teacher
+    """
+
+    # No Teacher, No Haptics
     if mode == 1:
         teacher_control = 0
         student_control = 1
         teacher_intensity = 0
         student_intensity = 0
-    
-    # Teacher, No Haptics 
+
+    # Teacher, No Haptics
     elif mode == 2:
-        key = input('Enter student control proportion(%)>>')
+        key = userInput('Enter student control proportion(%)>>')
         student_control = float(key)*0.01
         teacher_control = 1-student_control
-        
-        # Amount of intensity is inverse of amount of control 
+
+        # Amount of intensity is inverse of amount of control
         student_intensity = 0
         teacher_intensity = 0
-        
+
     #  Teacher, Haptics
     else:
-        key = input('Enter student control proportion(%)>>')
+        key = userInput('Enter student control proportion(%)>>')
         student_control = float(key)*0.01
         teacher_control = 1-student_control
-        
-        # Amount of intensity is inverse of amount of control 
+
+        # Amount of intensity is inverse of amount of control
         student_intensity = teacher_control
         teacher_intensity = student_control
 
-    return teacher_control, student_control, teacher_intensity, student_intensity 
+    return teacher_control, student_control, teacher_intensity, \
+        student_intensity
 
 
 def getDevices(mode):
@@ -234,61 +297,175 @@ def getDevices(mode):
 
     device_dict = {1: dng_device[0+offset], 3: dng_device[1+offset],
                    4: dng_device[2+offset]}
-    
+
     if mode == 1:
-         key = input('Select student (1,3,4)>>')
-         device1 = device_dict[int(key)]
-         
-         percent1 = device1.getBatteryPercentRemaining()
-         print('Student battery at {}%'.format(percent1))
-         
-         device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-         
-         print("Taring in 5\n")
 
-         for i in reversed(range(0, 5)):
-             sleep(1)
-             print(i)
-             print('\n')
-
-         device1.tareWithCurrentOrientation()
-         
-         print('GO!\n')
-
-         return device1, dng_device
-     
-    else:
-        key = input('Select teacher (1,3,4)>>')
+        key = userInput('Select student (1,3,4)>>')
         device1 = device_dict[int(key)]
-    
-        key = input('Select student (1,3,4)>>')
-        device2 = device_dict[int(key)]
-    
-        # Display Battery Levels
+
         percent1 = device1.getBatteryPercentRemaining()
-        percent2 = device2.getBatteryPercentRemaining()
-    
-        print('Teacher battery at {}%'.format(percent1))
-        print('Student battery at {}%'.format(percent2))
-    
-        # Tare and start data streaming
+        print('Student battery at {}%'.format(percent1))
+
         device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-        device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-    
+
         print("Taring in 5\n")
-    
+
         for i in reversed(range(0, 5)):
             sleep(1)
             print(i)
             print('\n')
-    
+
+        device1.tareWithCurrentOrientation()
+
+        print('GO!\n')
+
+        return device1, dng_device
+
+    else:
+
+        key = userInput('Select teacher (1,3,4)>>')
+        device1 = device_dict[int(key)]
+
+        key = userInput('Select student (1,3,4)>>')
+        device2 = device_dict[int(key)]
+
+        # Display Battery Levels
+        percent1 = device1.getBatteryPercentRemaining()
+        percent2 = device2.getBatteryPercentRemaining()
+
+        print('Teacher battery at {}%'.format(percent1))
+        print('Student battery at {}%'.format(percent2))
+
+        # Tare and start data streaming
+        device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+        device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+
+        # Tare and start countdown
+        print("Taring in 5\n")
+
+        for i in reversed(range(0, 5)):
+            sleep(1)
+            print(i)
+            print('\n')
+
         device1.tareWithCurrentOrientation()
         device2.tareWithCurrentOrientation()
-    
+
         print('GO!\n')
-    
+
         return device1, device2, dng_device
 
+
+def velocityMove(ball, teacher_tup, student_tup, teacher_control,
+                 student_control, tolerance, window, speed_limit, bounds):
+    """
+    Calculate pixel velocity of ball object based on weighted average
+    of teacher and student movements. Limit movement based on speed limit,
+    respawn ball in center if out of bounds.
+    """
+    scaling_factor = 10/(2*pi/4)
+
+    # Convert sensor angle movement to ball movement
+    if checkTolerance(teacher_tup, tolerance) or\
+            checkTolerance(student_tup, tolerance):
+
+        # Scaling factors subjective for moderate difficulty
+        x_move = (teacher_control*teacher_tup[1]+student_control
+                  * student_tup[1]) / scaling_factor
+
+        y_move = (teacher_control*teacher_tup[2]+student_control
+                  * student_tup[2]) / scaling_factor
+
+        #  y_move = (teacher_control*teacher_tup[2]+student_control
+                  # * student_tup[2]) / (2*pi/4) * 10
+
+    else:
+        x_move = 0
+        y_move = 0
+
+    # If speed limit exceeded, sets speed to limit in same direction
+    if abs(x_move) > speed_limit:
+        x_move = speed_limit * (x_move/x_move)
+    if abs(y_move) > speed_limit:
+        y_move = speed_limit * (y_move/y_move)
+
+    # Move ball, record motion within object
+    ball.move(-x_move, -y_move)
+    ball.x_center += x_move
+    ball.y_center += y_move
+
+    # Respawns ball in center of window if out of bounds
+    if ball.getCenter().x > bounds or ball.getCenter().y > bounds\
+            or ball.getCenter().x < 0 or ball.getCenter().y < 0:
+
+        ball.undraw()
+
+        pt = graphics.Point(bounds/2, bounds/2)
+        ball = graphics.Circle(pt, 25)
+        ball.setOutline('blue')
+        ball.setFill('blue')
+        ball.draw(window)
+
+
+def positionMove(window, bounds, max_movement_angle, ball,
+                 teacher_tup=0, student_tup=0, teacher_control=0,
+                 student_control=0):
+    """
+    Calculate poition of ball object in graphics window based on weighted
+    average of teacher and student movements. Limit movement to within graphics
+    window, move ball to new position.
+    """
+
+    # Convert sensor angle movement to ball movement
+    x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control)
+              / max_movement_angle * bounds) + bounds/2
+    y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control)
+              / max_movement_angle * bounds) + bounds/2
+
+    # print('\n')
+    # print('{},{}'.format(round(x_pos,2),round(y_pos,2)))
+    # print('\n')
+    # print('{},{}'.format(round(student_tup[1],2),round(student_tup[2],2)))
+
+    # Graphics window barrier
+    if x_pos > bounds:
+        x_pos = bounds
+
+    if x_pos < 0:
+        x_pos = 0
+
+    if y_pos > bounds:
+        y_pos = bounds
+
+    if y_pos < 0:
+        y_pos = 0
+
+    # Move ball between current position and next calculated position
+    ball.move(x_pos-ball.x_center, y_pos-ball.y_center)
+    ball.x_center = x_pos
+    ball.y_center = y_pos
+
+
+def displayScore(bounds, window, target_time, pause):
+    '''
+    Calculate target round score, briefly display text and resume play
+    '''
+    max_score = 100
+    entryCenterPt = graphics.Point(bounds/2,bounds/2)
+    
+    target_score = max_score - int(target_time)
+
+    labelText = 'Round score: {}'.format(target_score)
+    
+    labelCenter = entryCenterPt.clone()
+    labelCenter.move(0, 30)
+    
+    text = graphics.Text(labelCenter,labelText).draw(window)
+    sleep(pause)
+    text.undraw()
+        
+    return target_score
+    
 
 def checkTolerance(check_tup, tolerance):
     """Determine if coordinates exceed tolerance."""
@@ -296,9 +473,9 @@ def checkTolerance(check_tup, tolerance):
             or check_tup[2] > tolerance or check_tup[2] < -tolerance:
 
         return True
-    
+
     else:
-        
+
         return False
 
 
@@ -308,14 +485,15 @@ def close(device):
     print('\nDevices closed')
 
 
-def writeData(file, time, teacher_tup, student_tup, difference_tup, 
+def writeData(file, time, teacher_tup, student_tup, difference_tup,
               raw_intensity, teacher_intensity, student_intensity,
-              angle, score, ball, target, isFollowMe):
+              angle, score, target_time, ball, target, isFollowMe):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
-    so parameter of true for isFollowMe will write without a score (followMe) and
-    anything else will result in writing with score (tandemControlGame)
+    so parameter of true for isFollowMe will write without a score (followMe)
+    and anything else will result in writing with score (tandemControlGame)
     """
+
     # Teacher's haptics is always 180 degrees opposite student
     if angle > 0 and angle <= pi:
         angle_teacher = angle + pi
@@ -360,7 +538,8 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
                                 str(round(ball.y_center)),
                                 str(round(target.x_center)),
                                 str(round(target.y_center)),
-                                str(score)])
+                                str(score),
+                                str(round(target_time, 3))])
 
 
 def testPos(pos_tup1, pos_tup2, tolerance=0):
@@ -395,103 +574,3 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return True
     else:
         return False
-    
-    
-def velocityMove(ball, teacher_tup, student_tup, teacher_control, 
-                 student_control, tolerance, window, speed_limit, x_bounds,
-                 y_bounds):
-    """
-    Calculate pixel velocity of ball object based on weighted average 
-    of teacher and student movements. Limit movement based on speed limit, 
-    respawn ball in center if out of bounds.
-    """
-    
-    # Convert sensor angle movement to ball movement
-    if checkTolerance(teacher_tup, tolerance) or\
-            checkTolerance(student_tup, tolerance):
-        
-        # Scaling factors subjective for moderate difficulty
-        x_move = (teacher_control*teacher_tup[1]+student_control
-                  * student_tup[1]) / (2*pi/4) * 10
-        
-        y_move = (teacher_control*teacher_tup[2]+student_control
-                  * student_tup[2]) / (2*pi/4) * 10
-        
-    else:
-        x_move = 0
-        y_move = 0
-
-    # If speed limit exceeded, sets speed to limit in same direction
-    if abs(x_move) > speed_limit:
-        x_move = speed_limit * (x_move/x_move)
-    if abs(y_move) > speed_limit:
-        y_move = speed_limit * (y_move/y_move)
-
-    # Move ball, record motion within object
-    ball.move(-x_move, -y_move)
-    ball.x_center += x_move
-    ball.y_center += y_move
-
-    # Respawns ball in center of window if out of bounds
-    if ball.getCenter().x > x_bounds or ball.getCenter().y > y_bounds\
-            or ball.getCenter().x < 0 or ball.getCenter().y < 0:
-
-        ball.undraw()
-
-        pt = graphics.Point(x_bounds/2, y_bounds/2)
-        ball = graphics.Circle(pt, 25)
-        ball.setOutline('blue')
-        ball.setFill('blue')
-        ball.draw(window)
-
-
-def positionMove(window,  x_bounds, y_bounds, max_movement_angle, ball, 
-                 teacher_tup=0, student_tup=0, teacher_control=0, 
-                 student_control=0):
-    """
-    Calculate poition of ball object in graphics window based on weighted average 
-    of teacher and student movements. Limit movement to within graphics window,
-    move ball to new position.
-    """
-    # x_pos = -(student_tup[1] / (max_movement_angle) * x_bounds) + x_bounds/2
-    # y_pos = -(student_tup[2] / (max_movement_angle) * y_bounds) + y_bounds/2
-
-    
-    # Convert sensor angle movement to ball movement
-    x_pos = -((teacher_tup[1]*teacher_control+student_tup[1]*student_control)
-              / max_movement_angle * x_bounds) + x_bounds/2
-    y_pos = -((teacher_tup[2]*teacher_control+student_tup[2]*student_control) 
-              / max_movement_angle * y_bounds) + y_bounds/2
-    
-    print('\n')
-    print('{},{}'.format(round(x_pos,2),round(y_pos,2)))
-    print('\n')
-    print('{},{}'.format(round(student_tup[1],2),round(student_tup[2],2)))
-    
-    # Graphics window barrier
-    if x_pos > x_bounds:
-        x_pos = x_bounds
-        
-    if x_pos < 0:
-        x_pos = 0
-       
-    if y_pos > y_bounds:
-        y_pos = y_bounds
-        
-    if y_pos < 0:
-        y_pos = 0
-    
-    # Move ball between current position and next calculated position
-    ball.move(x_pos-ball.x_center, y_pos-ball.y_center)   
-    ball.x_center = x_pos
-    ball.y_center = y_pos
-    
-    
-def getMode():
-    options = "Modes: \n(1) No Teacher, No Haptics \n(2) Teacher, No Haptics \n(3) Teacher, Haptics"
-    print(options)
-    
-    mode_str = input('Select mode >>')
-    mode = int(mode_str)    
-    
-    return mode 
