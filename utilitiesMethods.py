@@ -297,7 +297,8 @@ def getDevices(mode):
 
     device_dict = {1: dng_device[0+offset], 3: dng_device[1+offset],
                    4: dng_device[2+offset]}
-
+    
+    # No teacher, no haptics
     if mode == 1:
 
         key = userInput('Select student (1,3,4)>>')
@@ -320,7 +321,8 @@ def getDevices(mode):
         print('GO!\n')
 
         return device1, dng_device
-
+    
+    # Teacher, with and without haptics
     else:
 
         key = userInput('Select teacher (1,3,4)>>')
@@ -363,6 +365,7 @@ def velocityMove(ball, teacher_tup, student_tup, teacher_control,
     of teacher and student movements. Limit movement based on speed limit,
     respawn ball in center if out of bounds.
     """
+    # Euler angles to pixels
     scaling_factor = 10/(2*pi/4)
 
     # Convert sensor angle movement to ball movement
@@ -446,20 +449,20 @@ def positionMove(window, bounds, max_movement_angle, ball,
     ball.y_center = y_pos
 
 
-def displayScore(bounds, window, target_time, pause):
+def displayScore(bounds, window, target_time, pause, max_score):
     '''
     Calculate target round score, briefly display text and resume play
     '''
-    max_score = 100
-    entryCenterPt = graphics.Point(bounds/2,bounds/2)
-    
+    # Calcuate score
     target_score = max_score - int(target_time)
 
+    # Format text
     labelText = 'Round score: {}'.format(target_score)
-    
+    entryCenterPt = graphics.Point(bounds/2,bounds/2)
     labelCenter = entryCenterPt.clone()
     labelCenter.move(0, 30)
     
+    # Display score briefly, then erase text and resume play
     text = graphics.Text(labelCenter,labelText).draw(window)
     sleep(pause)
     text.undraw()
@@ -502,9 +505,11 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
     else:
         angle_teacher = 0
 
+    # Write to file
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-
+        
+        # Demo program with just haptics, no graphics
         if isFollowMe:
             csvwriter.writerow([str(round(time, 3)),
                                 str(round(teacher_tup[0], 3)),
@@ -518,7 +523,8 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
                                 str(round(difference_tup[2], 3)),
                                 str(round(raw_intensity, 3)),
                                 str(round(angle, 2))])
-
+        
+        # Tandem control program
         else:
             csvwriter.writerow([str(round(time, 3)),
                                 str(round(teacher_tup[0], 3)),
@@ -541,13 +547,12 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
                                 str(score),
                                 str(round(target_time, 3))])
 
-
+# Currently not in use, made for test programs
 def testPos(pos_tup1, pos_tup2, tolerance=0):
     """
     Takes position tuple and margin of error tolerance, if position in each
     coordinate +/- toleance is less than 0.5 from 0, return true, else false
     """
-    # Currently not in use
 
     # Default values
     x_test_bool = False

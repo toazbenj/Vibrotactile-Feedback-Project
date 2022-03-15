@@ -43,7 +43,16 @@ Tandem Control Game
         Close window
         Close dongle
         Display message
-
+        
+    except AttributeError:
+        Display message
+        
+    except serial.SerialException:
+        Display message
+        
+    except OSError:
+        Display message
+        
 Reference: http://anh.cs.luc.edu/handsonPythonTutorial/graphics.html
 
 Created on Thu Dec 23 08:19:17 2021
@@ -61,30 +70,41 @@ from math import cos
 import socket
 
 # Sentinels/Conditions
-isFollowMe = False
-max_movement_angle = pi/4
+
+# Graphics/Gaming
 time = 0
 target_time = 0
-last_target_time = 0
-
-commandTime = 0
+previous_target_time = 0
 pause = 3
+
 tolerance = pi/48
 miss_margin = 10
 speed_limit = 15
+
 score = 0
-max_score = 100
-index = ''
-iteration = 4
+max_score = 10
 targets = 0
-file = 'gameDemo3.csv'
+
 theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 rand_lst = []
+
+bounds = 600
+radius = 3/10*bounds
+
+# Haptics
+max_movement_angle = pi/4
+index = ''
+iteration = 4
+commandTime = 0
+
+# Data
 header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
           'Difference-z', 'Teacher Intensity', 'Student Intensity',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
           'Target-y', 'Score','Target Duration']
+isFollowMe = False
+file = 'gameDemo3.csv'
 
 try:
     # Get mode
@@ -103,9 +123,7 @@ try:
     else:
         connection = 0
 
-    # Make Window
-    bounds = 400
-    radius = 3/10*bounds
+    # Make Graphics Window
     window = graphics.GraphWin(width=bounds, height=bounds)
 
     # Register haptic files
@@ -195,18 +213,20 @@ try:
                 target.undraw()
                 ball.undraw()
                 
-                # Calculate time taken and score attempt
-                target_time = time-last_target_time-pause*targets
-                score += utilities.displayScore(bounds, window, target_time, pause)
-                last_target_time = target_time
+                # Calculate time taken and calculate score for attempt
+                target_time = time - previous_target_time - (pause * targets)
+                score += utilities.displayScore(bounds, window, target_time, 
+                                                pause, max_score)
+                previous_target_time += target_time
                 targets += 1
                 
                 # Record data
-                time = perf_counter()-start
+                time = perf_counter() - start
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
-                                    teacher_intensity, student_intensity, angle,
-                                    score, target_time, ball, target, isFollowMe)
+                                    teacher_intensity, student_intensity, 
+                                    angle, score, target_time, ball, target,
+                                    isFollowMe)
                 
                 # Exit move loop
                 break
@@ -218,42 +238,55 @@ try:
                                 teacher_intensity, student_intensity, angle,
                                 score, target_time, ball, target, isFollowMe)
 
+    # Close hardware and external programs
     if mode == 3:
         connection.close()
 
     window.close()
     utilities.close(dongle)
-    print('\nYour time is {}.'.format(round(time, 2)))
-    print('\nYour score is {}.'.format(score))
 
+    # Display Results
+    print('\nYour time is {}.'.format(round(time, 2)))
+    print('\nYour score is {} out of {}.'.format(score, (8 * max_score)))
+
+# Note: the following except statements handle common errors that occur when 
+# the program runs properly but user error causes issues. If problem persists,
+# comment out except clauses to see the actual error
+
+# For manual shutdown
 except KeyboardInterrupt:
-    # For manual shutdown
     if mode == 3:
         connection.close()
     window.close()
     utilities.close(dongle)
     print('Manual shutdown')
     print('\nYour time is {}.'.format(round(time, 2)))
-    print('\nYour score is {}.'.format(score))
-    
+    print('\nYour score is {} out of {}.'.format(score, (8 * max_score)))
+
+# Setup incomplete
 except NameError:
-    # Will execute if setup not completed
     if mode == 3:
         connection.close()
     window.close()
     utilities.close(dongle)
     print('Setup incomplete')
 
+# Forgot to close the CSV file
 except PermissionError:
-    # Forgot to close the CSV file
     if mode == 3:
         connection.close()
     window.close()
     utilities.close(dongle)
     print('Close CSV File')
-    
+
+# Motion sensors not on or need to be charged
 except AttributeError:
     print('Turn on motion sensors')
-    
+
+# Dongle wasn't closed properly or open in another program
 except serial.SerialException:
-    print('Refresh kernal')
+    print('Refresh kernal or check dongle connection')
+
+# Client connection needs to refresh
+except OSError:
+    print('Run again to refresh client connection')
