@@ -63,6 +63,7 @@ from bhaptics import better_haptic_player as player
 import threespace_api as ts_api
 import csv
 from math import pi
+from math import exp
 from time import perf_counter
 from time import sleep
 import graphics
@@ -453,12 +454,13 @@ def displayScore(bounds, window, target_time, pause, max_score):
     '''
     Calculate target round score, briefly display text and resume play
     '''
-    # Calcuate score
-    target_score = max_score - int(target_time)
+    # Calcuate score based on exponenital decay over time
+    scaling = 0.5
+    target_score = int(max_score * exp(-scaling * target_time))
 
     # Format text
     labelText = 'Round score: {}'.format(target_score)
-    entryCenterPt = graphics.Point(bounds/2,bounds/2)
+    entryCenterPt = graphics.Point(75,10)
     labelCenter = entryCenterPt.clone()
     labelCenter.move(0, 30)
     

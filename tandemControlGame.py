@@ -82,7 +82,7 @@ miss_margin = 10
 speed_limit = 15
 
 score = 0
-max_score = 10
+max_score = 100
 targets = 0
 
 theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
@@ -156,7 +156,14 @@ try:
             rand_lst.append(move)
         except IndexError:
             rand_lst.append(i)
-
+            
+    # Make Ball
+    point = graphics.Point(bounds/2, bounds/2)
+    ball = graphics.Circle(point, 25)
+    ball.setOutline('blue')
+    ball.setFill('blue')
+    ball.draw(window)
+        
     # Main Loop, generates 8 targets from rotation angles
     for i in rand_lst:
         # Make target
@@ -167,13 +174,6 @@ try:
         target = graphics.Circle(point, 30)
         target.setOutline('red')
         target.draw(window)
-
-        # Make Ball
-        point = graphics.Point(bounds/2, bounds/2)
-        ball = graphics.Circle(point, 25)
-        ball.setOutline('blue')
-        ball.setFill('blue')
-        ball.draw(window)
         
         # Movement Loop
         while True:
@@ -211,7 +211,6 @@ try:
                 
             if x_diff < miss_margin and y_diff < miss_margin:
                 target.undraw()
-                ball.undraw()
                 
                 # Calculate time taken and calculate score for attempt
                 target_time = time - previous_target_time - (pause * targets)
@@ -221,7 +220,7 @@ try:
                 targets += 1
                 
                 # Record data
-                time = perf_counter() - start
+                time = perf_counter() - start - (pause * targets)
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 
@@ -232,7 +231,7 @@ try:
                 break
             
             # Record data
-            time = perf_counter()-start
+            time = perf_counter() - start - (pause * targets)
             utilities.writeData(file, time, teacher_tup, student_tup,
                                 difference_tup, raw_intensity,
                                 teacher_intensity, student_intensity, angle,
