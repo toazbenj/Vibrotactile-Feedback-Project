@@ -19,13 +19,13 @@ def getRounds():
     pretest_rounds = row[0]
     training_rounds = row[1]
     posttest_rounds = row[2]
-    training_type = row[3]
+    mode = row[3]
     
-    return pretest_rounds, training_rounds, posttest_rounds, training_type
+    return pretest_rounds, training_rounds, posttest_rounds, mode
 
-pretest_rounds, training_rounds, posttest_rounds, training_type = getRounds()
+pretest_rounds, training_rounds, posttest_rounds, mode = getRounds()
 
 print(pretest_rounds)
 print(training_rounds)
 print(posttest_rounds)
-print(training_type)
+print(mode)

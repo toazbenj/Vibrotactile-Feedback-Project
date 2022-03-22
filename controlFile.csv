@@ -1,6 +1,9 @@
-﻿Pretesting Rounds,Training Rounds,Post Testing Rounds,Training Type
-1,2,1,1
-,,,
-"Training, No Teacher, No Haptics",1,,
-"Training, Teacher, No Haptics",2,,
-"Training, Teacher, Haptics",3,,
+Pretesting Rounds,Training Rounds,Post Testing Rounds,Training Type/Mode,,,,,,,,,,,
+1,1,1,1,,,,,,,,,,,
+,,,,,,,,,,,,,,
+"Training, No Teacher, No Haptics",1,,,"			
+""Training",,,,,"			
+""Training",,,,,"			
+"
+"Teacher, No Haptics",2,,,,,,,,,,,,,
+"Teacher, Haptics",3,,,,,,,,,,,,,

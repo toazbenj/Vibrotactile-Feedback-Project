@@ -82,10 +82,13 @@ miss_margin = 10
 speed_limit = 15
 
 score = 0
-max_score = 100
 targets = 0
+max_score = 100
 
-theta_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
+isAuto = True
+
+training_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
+testing_lst = [0, pi/2, pi, 3*pi/2]
 rand_lst = []
 
 bounds = 600
@@ -104,11 +107,14 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
           'Target-y', 'Score','Target Duration']
 isFollowMe = False
-file = 'gameDemo3.csv'
+file = 'autoDemo.csv'
 
+# Pre Game start setup
 try:
     # Get rounds and mode
-    pretest_rounds, training_rounds, posttest_rounds, mode = getRounds()
+    pretest_rounds, training_rounds, posttest_rounds, mode = utilities.getRounds()
+    round_lst = [pretest_rounds, training_rounds, posttest_rounds]
+    overall_score = 4 * (pretest_rounds+posttest_rounds) + 9 * training_rounds
     
     if mode == 3:
         # Link to 2nd computer
@@ -129,10 +135,6 @@ try:
     # Register haptic files
     utilities.register(iteration)
 
-    # Control and intensity ratios
-    teacher_control, student_control, teacher_intensity, student_intensity =\
-        utilities.getSharing(mode)
-
     # Register and Tare Sensors
     if mode == 1:
         student, dongle, = utilities.getDevices(mode)
@@ -140,22 +142,6 @@ try:
         teacher, student, dongle, = utilities.getDevices(mode)
         
     start = perf_counter()
-    
-    # Open data file, write header
-    with open(file, 'w', newline='') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(['Mode', mode])
-        csvwriter.writerow(header)
-
-    # Generates random list of rotation angles
-    for i in theta_lst:
-        position = randint(0, 8)
-        try:
-            move = rand_lst[position]
-            rand_lst[position] = i
-            rand_lst.append(move)
-        except IndexError:
-            rand_lst.append(i)
             
     # Make Ball
     point = graphics.Point(bounds/2, bounds/2)
@@ -163,83 +149,138 @@ try:
     ball.setOutline('blue')
     ball.setFill('blue')
     ball.draw(window)
-        
-    # Main Loop, generates 8 targets from rotation angles
-    for i in rand_lst:
-        # Make target
-        x_coord = bounds * (1/2) + radius * (cos(i))
-        y_coord = bounds * (1/2) + radius * (sin(i))
-
-        point = graphics.Point(x_coord, y_coord)
-        target = graphics.Circle(point, 30)
-        target.setOutline('red')
-        target.draw(window)
-        
-        # Movement Loop
-        while True:
+    
+    # Main loop, iterate through each round, 3 types
+    for rounds in range(0, sum(round_lst)):
+        print(rounds)
+        # Pre round setup
+        # Find which type of target sequence is being fielded
+        if rounds < pretest_rounds:
+            round_type = 1
+        elif rounds > pretest_rounds and rounds < pretest_rounds+training_rounds:
+            round_type = 2
+        else:
+            round_type = 3
             
-            # Get position data
-            if mode == 1:
-                student_tup = student.getStreamingBatch()
-                teacher_tup = (0, 0, 0)
-                difference_tup = (0, 0, 0)
+        # Generates random list of rotation angles
+        if round_type == 2:
+            # 8 Targets for training
+            for i in training_lst:
+                position = randint(0, 8)
+                try:
+                    move = rand_lst[position]
+                    rand_lst[position] = i
+                    rand_lst.append(move)
+                except IndexError:
+                    rand_lst.append(i)
+                    
+        else:
+            # 4 Targets for testing
 
-            else:
-                teacher_tup = teacher.getStreamingBatch()
-                student_tup = student.getStreamingBatch()
-                difference_tup = (student_tup[0]-teacher_tup[0],
-                                  student_tup[1]-teacher_tup[1],
-                                  student_tup[2]-teacher_tup[2])
+            for i in testing_lst:
+                position = randint(0, 4)
+                try:
+                    move = rand_lst[position]
+                    rand_lst[position] = i
+                    rand_lst.append(move)
+                except IndexError:
+                    rand_lst.append(i)
+                    
+        # Write new header
+        if rounds == 0:
+            # Open data file, write header
+            with open(file, 'w', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerow(['Mode', mode, 'Round Type', 1])
+                csvwriter.writerow(header)
+        else:
+            # For each round, append new header
+            with open(file, 'a', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerow([])
+                csvwriter.writerow(['Mode', mode, 'Round Type', round_type])
+                csvwriter.writerow(header)
+        
+        # Control and intensity ratios
+        teacher_control, student_control, teacher_intensity, student_intensity =\
+            utilities.getSharing(mode, rounds, isAuto)
 
-            # Select haptics direction
-            index = utilities.getIndex(difference_tup, tolerance)
-
-            # Play haptics, return values for recording
-            angle, raw_intensity, commandTime = utilities.advancedPlay(
-                index, difference_tup, start, commandTime, iteration,
-                connection, teacher_intensity, student_intensity, mode)
-
-            # Move ball
-            utilities.positionMove(window, bounds,
-                                   max_movement_angle, ball, teacher_tup,
-                                   student_tup, teacher_control,
-                                   student_control)
+        # Iterate through each target attempt
+        for i in rand_lst:
+            # Make target
+            x_coord = bounds * (1/2) + radius * (cos(i))
+            y_coord = bounds * (1/2) + radius * (sin(i))
+    
+            point = graphics.Point(x_coord, y_coord)
+            target = graphics.Circle(point, 30)
+            target.setOutline('red')
+            target.draw(window)
             
-            # Check if target is hit
-            x_diff = abs(ball.getCenter().x-target.getCenter().x)
-            y_diff = abs(ball.getCenter().y-target.getCenter().y)
+            # Movement Loop
+            while True:
                 
-            if x_diff < miss_margin and y_diff < miss_margin:
-                target.undraw()
+                # Get position data
+                if mode == 1:
+                    student_tup = student.getStreamingBatch()
+                    teacher_tup = (0, 0, 0)
+                    difference_tup = (0, 0, 0)
+    
+                else:
+                    teacher_tup = teacher.getStreamingBatch()
+                    student_tup = student.getStreamingBatch()
+                    difference_tup = (student_tup[0]-teacher_tup[0],
+                                      student_tup[1]-teacher_tup[1],
+                                      student_tup[2]-teacher_tup[2])
+    
+                # Select haptics direction
+                index = utilities.getIndex(difference_tup, tolerance)
+    
+                # Play haptics, return values for recording
+                angle, raw_intensity, commandTime = utilities.advancedPlay(
+                    index, difference_tup, start, commandTime, iteration,
+                    connection, teacher_intensity, student_intensity, mode)
+    
+                # Move ball
+                utilities.positionMove(window, bounds,
+                                       max_movement_angle, ball, teacher_tup,
+                                       student_tup, teacher_control,
+                                       student_control)
                 
-                # Calculate time taken and calculate score for attempt
-                target_time = time - previous_target_time
-                score += utilities.displayScore(bounds, window, target_time, 
-                                                pause, max_score)
-                previous_target_time += target_time
-                targets += 1
+                # Check if target is hit
+                x_diff = abs(ball.getCenter().x-target.getCenter().x)
+                y_diff = abs(ball.getCenter().y-target.getCenter().y)
+                    
+                if x_diff < miss_margin and y_diff < miss_margin:
+                    target.undraw()
+                    
+                    # Calculate time taken and calculate score for attempt
+                    target_time = time - previous_target_time
+                    score += utilities.displayScore(bounds, window, target_time, 
+                                                    pause, max_score)
+                    previous_target_time += target_time
+                    targets += 1
+                    
+                    # Record data
+                    time = perf_counter() - start - (pause * targets)
+                    utilities.writeData(file, time, teacher_tup, student_tup,
+                                        difference_tup, raw_intensity,
+                                        teacher_intensity, student_intensity, 
+                                        angle, score, target_time, ball, target,
+                                        isFollowMe)
+                    
+                    # Exit move loop
+                    break
                 
                 # Record data
                 time = perf_counter() - start - (pause * targets)
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
-                                    teacher_intensity, student_intensity, 
-                                    angle, score, target_time, ball, target,
-                                    isFollowMe)
-                
-                # Exit move loop
-                break
-            
-            # Record data
-            time = perf_counter() - start - (pause * targets)
-            utilities.writeData(file, time, teacher_tup, student_tup,
-                                difference_tup, raw_intensity,
-                                teacher_intensity, student_intensity, angle,
-                                score, target_time, ball, target, isFollowMe)
+                                    teacher_intensity, student_intensity, angle,
+                                    score, target_time, ball, target, isFollowMe)
 
     # Display Results
     print('\nYour time is {}.'.format(round(time, 2)))
-    print('\nYour score is {} out of {}.'.format(score, (8 * max_score)))
+    print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
 # Note: the following except statements handle common errors that occur when 
 # the program runs properly but user error causes issues. If problem persists,
@@ -249,32 +290,32 @@ try:
 except KeyboardInterrupt:
     print('Manual shutdown')
     print('\nYour time is {}.'.format(round(time, 2)))
-    print('\nYour score is {} out of {}.'.format(score, (8 * max_score)))
+    print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# Setup incomplete
-except NameError:
-    print('Setup incomplete')
+# # Setup incomplete
+# except NameError:
+#     print('Setup incomplete')
 
-# Forgot to close the CSV file
-except PermissionError:
-    print('Close CSV File')
+# # Forgot to close the CSV file
+# except PermissionError:
+#     print('Close CSV File')
 
-# Motion sensors not on or need to be charged
-except AttributeError:
-    print('Turn on motion sensors')
+# # Motion sensors not on or need to be charged
+# except AttributeError:
+#     print('Turn on motion sensors')
 
-# Dongle wasn't closed properly or open in another program
-except serial.SerialException:
-    print('Refresh kernal or check dongle connection')
+# # Dongle wasn't closed properly or open in another program
+# except serial.SerialException:
+#     print('Refresh kernal or check dongle connection')
 
-# Client connection needs to refresh
-except OSError:
-    print('Run again to refresh client connection')
+# # Client connection needs to refresh
+# except OSError:
+#     print('Run again to refresh client connection')
 
 # No matter what, close peripherals
 finally:
     if mode == 3:
-       connection.close()
+        connection.close()
     window.close()
     utilities.close(dongle)
 

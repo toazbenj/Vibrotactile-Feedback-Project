@@ -246,12 +246,15 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-def getSharing(mode):
+def getSharing(mode, rounds, isAuto):
     """
     Receive/calculate the amount of cursor control and intensity for
     student/teacher
     """
-
+    
+    # Increasing amount of student control for each round
+    round_control_dict = {1:0.1, 2:0.25, 3:0.50, 4:0.75, 5:0.90}
+    
     # No Teacher, No Haptics
     if mode == 1:
         teacher_control = 0
@@ -261,23 +264,43 @@ def getSharing(mode):
 
     # Teacher, No Haptics
     elif mode == 2:
-        key = userInput('Enter student control proportion(%)>>')
-        student_control = float(key)*0.01
-        teacher_control = 1-student_control
-
-        # Amount of intensity is inverse of amount of control
-        student_intensity = 0
-        teacher_intensity = 0
+        if isAuto:
+            student_control = round_control_dict[rounds]
+            teacher_control = 1-student_control
+    
+            # No haptics
+            student_intensity = 0
+            teacher_intensity = 0
+            
+        else:
+            
+            key = userInput('Enter student control proportion(%)>>')
+            student_control = float(key)*0.01
+            teacher_control = 1-student_control
+    
+            # No haptics
+            student_intensity = 0
+            teacher_intensity = 0
 
     #  Teacher, Haptics
     else:
-        key = userInput('Enter student control proportion(%)>>')
-        student_control = float(key)*0.01
-        teacher_control = 1-student_control
+        if isAuto:
 
-        # Amount of intensity is inverse of amount of control
-        student_intensity = teacher_control
-        teacher_intensity = student_control
+            student_control = round_control_dict[rounds]
+            teacher_control = 1-student_control
+    
+            # Amount of intensity is inverse of amount of control
+            student_intensity = teacher_control
+            teacher_intensity = student_control
+        
+        else:
+            key = userInput('Enter student control proportion(%)>>')
+            student_control = float(key)*0.01
+            teacher_control = 1-student_control
+    
+            # Amount of intensity is inverse of amount of control
+            student_intensity = teacher_control
+            teacher_intensity = student_control
 
     return teacher_control, student_control, teacher_intensity, \
         student_intensity
@@ -585,3 +608,20 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return True
     else:
         return False
+
+
+def getRounds():
+
+    file = 'controlFile.csv'
+    # Open data file, write header
+    with open(file, 'r', newline='') as csvfile:
+        csvreader = csv.reader(csvfile)
+        next(csvreader)
+        row = next(csvreader)
+            
+    pretest_rounds = int(row[0])
+    training_rounds = int(row[1])
+    posttest_rounds = int(row[2])
+    mode = int(row[3])
+    
+    return pretest_rounds, training_rounds, posttest_rounds, mode
