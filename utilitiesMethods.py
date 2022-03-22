@@ -455,8 +455,12 @@ def displayScore(bounds, window, target_time, pause, max_score):
     Calculate target round score, briefly display text and resume play
     '''
     # Calcuate score based on exponenital decay over time
-    scaling = 0.5
-    target_score = int(max_score * exp(-scaling * target_time))
+    scaling = 0.1
+    
+    if target_time < 1:
+        target_score = 100
+    else:
+        target_score = int(max_score * exp(-scaling * target_time))
 
     # Format text
     labelText = 'Round score: {}'.format(target_score)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tandem Control Game
+MultiRound Tandem Control Game
 
     Try
         Link to 2nd computer
@@ -107,9 +107,9 @@ isFollowMe = False
 file = 'gameDemo3.csv'
 
 try:
-    # Get mode
-    mode = utilities.getMode()
-
+    # Get rounds and mode
+    pretest_rounds, training_rounds, posttest_rounds, mode = getRounds()
+    
     if mode == 3:
         # Link to 2nd computer
         socket = socket.socket()
@@ -277,3 +277,4 @@ finally:
        connection.close()
     window.close()
     utilities.close(dongle)
+
