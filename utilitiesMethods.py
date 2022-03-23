@@ -306,7 +306,7 @@ def getSharing(mode, rounds, isAuto):
         student_intensity
 
 
-def getDevices(mode):
+def getDevices(mode, isAuto, teacher_sensor, student_sensor):
     """
     Search for docked devices, make list, assign names and orientation,
     display battery levels, tare countdown, return devices
@@ -322,64 +322,120 @@ def getDevices(mode):
     device_dict = {1: dng_device[0+offset], 3: dng_device[1+offset],
                    4: dng_device[2+offset]}
     
-    # No teacher, no haptics
-    if mode == 1:
-
-        key = userInput('Select student (1,3,4)>>')
-        device1 = device_dict[int(key)]
-
-        percent1 = device1.getBatteryPercentRemaining()
-        print('Student battery at {}%'.format(percent1))
-
-        device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-
-        print("Taring in 5\n")
-
-        for i in reversed(range(0, 5)):
-            sleep(1)
-            print(i)
-            print('\n')
-
-        device1.tareWithCurrentOrientation()
-
-        print('GO!\n')
-
-        return device1, dng_device
+    if isAuto:
+        # No teacher, no haptics
+        if mode == 1:
     
-    # Teacher, with and without haptics
+            device1 = device_dict[int(student_sensor)]
+    
+            percent1 = device1.getBatteryPercentRemaining()
+            print('Student battery at {}%'.format(percent1))
+    
+            device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+    
+            print("Taring in 5\n")
+    
+            for i in reversed(range(0, 5)):
+                sleep(1)
+                print(i)
+                print('\n')
+    
+            device1.tareWithCurrentOrientation()
+    
+            print('GO!\n')
+    
+            return device1, dng_device
+        
+        # Teacher, with and without haptics
+        else:
+    
+            device1 = device_dict[int(teacher_sensor)]
+            device2 = device_dict[int(student_sensor)]
+    
+            # Display Battery Levels
+            percent1 = device1.getBatteryPercentRemaining()
+            percent2 = device2.getBatteryPercentRemaining()
+    
+            print('Teacher battery at {}%'.format(percent1))
+            print('Student battery at {}%'.format(percent2))
+    
+            # Tare and start data streaming
+            device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+            device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+    
+            # Tare and start countdown
+            print("Taring in 5\n")
+    
+            for i in reversed(range(0, 5)):
+                sleep(1)
+                print(i)
+                print('\n')
+    
+            device1.tareWithCurrentOrientation()
+            device2.tareWithCurrentOrientation()
+    
+            print('GO!\n')
+    
+            return device1, device2, dng_device
     else:
-
-        key = userInput('Select teacher (1,3,4)>>')
-        device1 = device_dict[int(key)]
-
-        key = userInput('Select student (1,3,4)>>')
-        device2 = device_dict[int(key)]
-
-        # Display Battery Levels
-        percent1 = device1.getBatteryPercentRemaining()
-        percent2 = device2.getBatteryPercentRemaining()
-
-        print('Teacher battery at {}%'.format(percent1))
-        print('Student battery at {}%'.format(percent2))
-
-        # Tare and start data streaming
-        device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-        device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
-
-        # Tare and start countdown
-        print("Taring in 5\n")
-
-        for i in reversed(range(0, 5)):
-            sleep(1)
-            print(i)
-            print('\n')
-
-        device1.tareWithCurrentOrientation()
-        device2.tareWithCurrentOrientation()
-
-        print('GO!\n')
-
-        return device1, device2, dng_device
+    # No teacher, no haptics
+        if mode == 1:
+    
+            key = userInput('Select student (1,3,4)>>')
+            device1 = device_dict[int(key)]
+    
+            percent1 = device1.getBatteryPercentRemaining()
+            print('Student battery at {}%'.format(percent1))
+    
+            device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+    
+            print("Taring in 5\n")
+    
+            for i in reversed(range(0, 5)):
+                sleep(1)
+                print(i)
+                print('\n')
+    
+            device1.tareWithCurrentOrientation()
+    
+            print('GO!\n')
+    
+            return device1, dng_device
+        
+        # Teacher, with and without haptics
+        else:
+    
+            key = userInput('Select teacher (1,3,4)>>')
+            device1 = device_dict[int(key)]
+    
+            key = userInput('Select student (1,3,4)>>')
+            device2 = device_dict[int(key)]
+    
+            # Display Battery Levels
+            percent1 = device1.getBatteryPercentRemaining()
+            percent2 = device2.getBatteryPercentRemaining()
+    
+            print('Teacher battery at {}%'.format(percent1))
+            print('Student battery at {}%'.format(percent2))
+    
+            # Tare and start data streaming
+            device1.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+            device2.setStreamingSlots(slot0='getTaredOrientationAsEulerAngles')
+    
+            # Tare and start countdown
+            print("Taring in 5\n")
+    
+            for i in reversed(range(0, 5)):
+                sleep(1)
+                print(i)
+                print('\n')
+    
+            device1.tareWithCurrentOrientation()
+            device2.tareWithCurrentOrientation()
+    
+            print('GO!\n')
+    
+            return device1, device2, dng_device
 
 
 def velocityMove(ball, teacher_tup, student_tup, teacher_control,
@@ -610,7 +666,7 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return False
 
 
-def getRounds():
+def getAutoSetup():
 
     file = 'controlFile.csv'
     # Open data file, write header
@@ -623,5 +679,8 @@ def getRounds():
     training_rounds = int(row[1])
     posttest_rounds = int(row[2])
     mode = int(row[3])
+    teacher_sensor = int(row[4])    
+    student_sensor = int(row[5])
     
-    return pretest_rounds, training_rounds, posttest_rounds, mode
+    return pretest_rounds, training_rounds, posttest_rounds, mode,\
+        teacher_sensor, student_sensor
