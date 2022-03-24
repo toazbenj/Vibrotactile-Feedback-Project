@@ -109,20 +109,20 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
           'Difference-z', 'Teacher Intensity', 'Student Intensity',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
-          'Target-y', 'Score','Target Duration']
+          'Target-y', 'Score','Target Duration', 'Training Mode', 'Round Type']
 isFollowMe = False
 
 
 # Pre Game start setup
 try:
-    # Get rounds and mode
-    pretest_rounds, training_rounds, posttest_rounds, mode, teacher_sensor,\
+    # Get rounds and training mode
+    pretest_rounds, training_rounds, posttest_rounds, training_mode, teacher_sensor,\
         student_sensor = utilities.getAutoSetup()
     round_lst = [pretest_rounds, training_rounds, posttest_rounds]
     overall_score = 100 * (8 * (pretest_rounds+posttest_rounds) + 
                            4 * training_rounds)
     
-    if mode == 3:
+    if training_mode == 3:
         # Link to 2nd computer
         socket = socket.socket()
         port = 8080
@@ -143,15 +143,21 @@ try:
     utilities.register(iteration)
 
     # Register and Tare Sensors
-    if mode == 1:
+    if training_mode == 1:
         student, dongle, = utilities.getDevices(
-            mode, isAuto, teacher_sensor, student_sensor)
+            training_mode, isAuto, teacher_sensor, student_sensor)
     else:
         teacher, student, dongle, = utilities.getDevices(
-            mode, isAuto, teacher_sensor, student_sensor)
+            training_mode, isAuto, teacher_sensor, student_sensor)
         
     start = perf_counter()
-            
+    
+    # Write new header
+    with open(file, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(['Mode', training_mode, 'Round Type', 1])
+        csvwriter.writerow(header)
+        
     # Make Ball
     point = graphics.Point(bounds/2, bounds/2)
     ball = graphics.Circle(point, 25)
@@ -198,25 +204,10 @@ try:
                     rand_lst.append(move)
                 except IndexError:
                     rand_lst.append(i)
-                    
-        # Write new header
-        if rounds == 0:
-            # Open data file, write header
-            with open(file, 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile)
-                csvwriter.writerow(['Mode', mode, 'Round Type', 1])
-                csvwriter.writerow(header)
-        else:
-            # For each round, append new header
-            with open(file, 'a', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile)
-                csvwriter.writerow([])
-                csvwriter.writerow(['Mode', mode, 'Round Type', round_type])
-                csvwriter.writerow(header)
         
         # Control and intensity ratios
         teacher_control, student_control, teacher_intensity, student_intensity\
-            = utilities.getSharing(mode, rounds, isAuto)
+            = utilities.getSharing(training_mode, rounds, isAuto)
 
         # Iterate through each target attempt
         for i in rand_lst:
@@ -235,7 +226,7 @@ try:
             while True:
                 
                 # Get position data
-                if mode == 1:
+                if training_mode == 1:
                     student_tup = student.getStreamingBatch()
                     teacher_tup = (0, 0, 0)
                     difference_tup = (0, 0, 0)
@@ -253,7 +244,7 @@ try:
                 # Play haptics, return values for recording
                 angle, raw_intensity, commandTime = utilities.advancedPlay(
                     index, difference_tup, start, commandTime, iteration,
-                    connection, teacher_intensity, student_intensity, mode)
+                    connection, teacher_intensity, student_intensity, training_mode)
     
                 # Move ball
                 utilities.positionMove(window, bounds,
@@ -339,7 +330,7 @@ except OSError:
 
 # No matter what, close peripherals
 finally:
-    if mode == 3:
+    if training_mode == 3:
         connection.close()
     window.close()
     utilities.close(dongle)

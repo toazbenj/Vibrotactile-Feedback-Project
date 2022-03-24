@@ -577,7 +577,8 @@ def close(device):
 
 def writeData(file, time, teacher_tup, student_tup, difference_tup,
               raw_intensity, teacher_intensity, student_intensity,
-              angle, score, target_time, ball, target, isFollowMe):
+              angle, score, target_time, ball, target,  training_mode,
+              round_type, isFollowMe):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
     so parameter of true for isFollowMe will write without a score (followMe)
@@ -632,7 +633,8 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
                                 str(round(target.x_center)),
                                 str(round(target.y_center)),
                                 str(score),
-                                str(round(target_time, 3))])
+                                str(round(target_time, 3)), str(training_mode),
+                                str(round_type)])
 
 # Currently not in use, made for test programs
 def testPos(pos_tup1, pos_tup2, tolerance=0):

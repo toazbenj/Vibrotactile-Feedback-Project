@@ -102,15 +102,16 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
           'Difference-z', 'Teacher Intensity', 'Student Intensity',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
-          'Target-y', 'Score','Target Duration']
+          'Target-y', 'Score','Target Duration', 'Training Mode', 'Round Type']
 isFollowMe = False
 file = 'gameDemo3.csv'
+round_type = 1
 
 try:
     # Get mode
-    mode = utilities.getMode()
+    training_mode = utilities.getMode()
 
-    if mode == 3:
+    if training_mode == 3:
         # Link to 2nd computer
         socket = socket.socket()
         port = 8080
@@ -132,20 +133,19 @@ try:
 
     # Control and intensity ratios
     teacher_control, student_control, teacher_intensity, student_intensity =\
-        utilities.getSharing(mode)
+        utilities.getSharing(training_mode)
 
     # Register and Tare Sensors
-    if mode == 1:
-        student, dongle, = utilities.getDevices(mode)
+    if training_mode == 1:
+        student, dongle, = utilities.getDevices(training_mode)
     else:
-        teacher, student, dongle, = utilities.getDevices(mode)
+        teacher, student, dongle, = utilities.getDevices(training_mode)
         
     start = perf_counter()
     
     # Open data file, write header
     with open(file, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(['Mode', mode])
         csvwriter.writerow(header)
 
     # Generates random list of rotation angles
@@ -181,7 +181,7 @@ try:
         while True:
             
             # Get position data
-            if mode == 1:
+            if training_mode == 1:
                 student_tup = student.getStreamingBatch()
                 teacher_tup = (0, 0, 0)
                 difference_tup = (0, 0, 0)
@@ -199,7 +199,7 @@ try:
             # Play haptics, return values for recording
             angle, raw_intensity, commandTime = utilities.advancedPlay(
                 index, difference_tup, start, commandTime, iteration,
-                connection, teacher_intensity, student_intensity, mode)
+                connection, teacher_intensity, student_intensity, training_mode)
 
             # Move ball
             utilities.positionMove(window, bounds,
@@ -237,7 +237,8 @@ try:
             utilities.writeData(file, time, teacher_tup, student_tup,
                                 difference_tup, raw_intensity,
                                 teacher_intensity, student_intensity, angle,
-                                score, target_time, ball, target, isFollowMe)
+                                score, target_time, ball, target, training_mode,
+                                round_type, isFollowMe)
 
     # Display Results
     print('\nYour time is {}.'.format(round(time, 2)))
@@ -275,7 +276,7 @@ except OSError:
 
 # No matter what, close peripherals
 finally:
-    if mode == 3:
+    if training_mode == 3:
        connection.close()
     window.close()
     utilities.close(dongle)
