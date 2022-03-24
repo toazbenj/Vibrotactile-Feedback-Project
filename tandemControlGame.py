@@ -125,6 +125,7 @@ try:
 
     # Make Graphics Window
     window = graphics.GraphWin(width=bounds, height=bounds)
+    window.setBackground('black')
 
     # Register haptic files
     utilities.register(iteration)
@@ -160,8 +161,8 @@ try:
     # Make Ball
     point = graphics.Point(bounds/2, bounds/2)
     ball = graphics.Circle(point, 25)
-    ball.setOutline('blue')
-    ball.setFill('blue')
+    ball.setOutline('white')
+    ball.setFill('white')
     ball.draw(window)
         
     # Main Loop, generates 8 targets from rotation angles
@@ -171,8 +172,9 @@ try:
         y_coord = bounds * (1/2) + radius * (sin(i))
 
         point = graphics.Point(x_coord, y_coord)
-        target = graphics.Circle(point, 30)
-        target.setOutline('red')
+        target = graphics.Circle(point, 35)
+        target.setOutline('green')
+        target.setWidth(5)
         target.draw(window)
         
         # Movement Loop

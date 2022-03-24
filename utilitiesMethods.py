@@ -548,7 +548,9 @@ def displayScore(bounds, window, target_time, pause, max_score):
     labelCenter.move(0, 30)
     
     # Display score briefly, then erase text and resume play
-    text = graphics.Text(labelCenter,labelText).draw(window)
+    text = graphics.Text(labelCenter,labelText)
+    text.setFill('white')
+    text.draw(window)
     sleep(pause)
     text.undraw()
         
