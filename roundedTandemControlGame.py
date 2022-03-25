@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isGodMode = False
+isGodMode = True
 
 time = 0
 target_time = 0
@@ -277,7 +277,8 @@ try:
                                         difference_tup, raw_intensity,
                                         teacher_intensity, student_intensity, 
                                         angle, score, target_time, ball,
-                                        target, isFollowMe)
+                                        target, training_mode,
+                                        round_type, isFollowMe)
                     
                     if isGodMode:
                         ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
@@ -292,7 +293,7 @@ try:
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 
                                     angle, score, target_time, ball, target,
-                                    isFollowMe)
+                                    training_mode, round_type, isFollowMe)
 
     # Display Results
     print('\nYour time is {}.'.format(round(time, 2)))

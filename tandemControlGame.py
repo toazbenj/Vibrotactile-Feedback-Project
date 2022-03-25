@@ -106,6 +106,7 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
 isFollowMe = False
 file = 'gameDemo3.csv'
 round_type = 1
+isAuto =False
 
 try:
     # Get mode
@@ -226,8 +227,8 @@ try:
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 
-                                    angle, score, target_time, ball, target,
-                                    isFollowMe)
+                                    angle, score, target_time, ball, target, 
+                                    training_mode, round_type, isFollowMe)
                 
                 # Exit move loop
                 break
