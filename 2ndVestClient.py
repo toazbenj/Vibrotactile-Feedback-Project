@@ -31,9 +31,9 @@ rvs_haptic_dict = {'d': "MoveLeft", 'a': 'MoveRight', 's': "MoveForward",
                    'w': 'MoveBack', 'sd': 'ForwardLeft', 'sa': 'ForwardRight',
                    'wd': 'BackLeft', 'wa': 'BackRight'}
 
-host = "35.12.209.199"
+
 # Initialize host and port
-host = "192.168.1.16"
+host = "35.12.209.114"
 port = 8080
 
 # Bind socket with port and host
@@ -73,3 +73,4 @@ try:
 # Server ends program
 except ValueError:
     print('Disconnected')
+    
