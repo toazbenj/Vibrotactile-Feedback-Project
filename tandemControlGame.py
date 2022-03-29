@@ -134,7 +134,7 @@ try:
 
     # Control and intensity ratios
     teacher_control, student_control, teacher_intensity, student_intensity =\
-        utilities.getSharing(training_mode)
+        utilities.getSharing(mode=training_mode, isAuto=isAuto)
 
     # Register and Tare Sensors
     if training_mode == 1:
