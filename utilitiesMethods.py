@@ -253,7 +253,7 @@ def getSharing(mode, rounds, isAuto):
     """
     
     # Increasing amount of student control for each round
-    round_control_dict = {1:0.1, 2:0.25, 3:0.50, 4:0.75, 5:0.90}
+    round_control_dict = {0:0.1, 1:0.25, 2:0.50, 3:0.75, 4:0.90}
     
     # No Teacher, No Haptics
     if mode == 1:
@@ -490,9 +490,8 @@ def velocityMove(ball, teacher_tup, student_tup, teacher_control,
         ball.draw(window)
 
 
-def positionMove(window, bounds, max_movement_angle, ball,
-                 teacher_tup=0, student_tup=0, teacher_control=0,
-                 student_control=0):
+def positionMove(window, bounds, max_movement_angle, ball, teacher_tup=0,
+                 student_tup=0, teacher_control=0, student_control=0):
     """
     Calculate poition of ball object in graphics window based on weighted
     average of teacher and student movements. Limit movement to within graphics
@@ -672,7 +671,7 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
 
 def getAutoSetup():
 
-    file = 'controlFile.csv'
+    file = 'controlFile2.csv'
     # Open data file, write header
     with open(file, 'r', newline='') as csvfile:
         csvreader = csv.reader(csvfile)
@@ -688,3 +687,31 @@ def getAutoSetup():
     
     return pretest_rounds, training_rounds, posttest_rounds, mode,\
         teacher_sensor, student_sensor
+
+
+def intermission(time, window):
+    intermission_start = perf_counter()
+    isPaused = True
+    click = None
+    
+    # Format text
+    labelText = 'Click anywhere to continue.'
+    entryCenterPt = graphics.Point(100, 10)
+    labelCenter = entryCenterPt.clone()
+    labelCenter.move(0, 10)
+    
+    # Display directions
+    text = graphics.Text(labelCenter,labelText)
+    text.setFill('white')
+    text.draw(window)
+    
+    while isPaused:
+        click = window.getMouse()
+        if click:
+            isPaused = False
+            intermission_end = perf_counter()
+            
+    text.undraw()
+    intermission_time = intermission_end - intermission_start
+    
+    return intermission_time

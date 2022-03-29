@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isGodMode = True
+isGodMode = False
 
 time = 0
 target_time = 0
@@ -111,7 +111,7 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
           'Target-y', 'Score','Target Duration', 'Training Mode', 'Round Type']
 isFollowMe = False
-
+intermission_time = 0
 
 # Pre Game start setup
 try:
@@ -155,7 +155,6 @@ try:
     # Write new header
     with open(file, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(['Mode', training_mode, 'Round Type', 1])
         csvwriter.writerow(header)
         
     # Make Ball
@@ -209,9 +208,12 @@ try:
         teacher_control, student_control, teacher_intensity, student_intensity\
             = utilities.getSharing(training_mode, rounds, isAuto)
 
+        # Pause for break in between rounds
+        intermission_time += utilities.intermission(time, window)
+        time = perf_counter() - start - (pause * targets) - intermission_time
+
         # Iterate through each target attempt
         for i in rand_lst:
-            print(round_type)
             # Make target
             x_coord = bounds * (1/2) + radius * (cos(i))
             y_coord = bounds * (1/2) + radius * (sin(i))
@@ -272,7 +274,7 @@ try:
                     targets += 1
                     
                     # Record data
-                    time = perf_counter() - start - (pause * targets)
+                    time = perf_counter() - start - (pause * targets) - intermission_time
                     utilities.writeData(file, time, teacher_tup, student_tup,
                                         difference_tup, raw_intensity,
                                         teacher_intensity, student_intensity, 
@@ -286,9 +288,11 @@ try:
                     # Exit move loop
                     break
                 
+                # Set to 0 for recording purposes
+                target_time = 0
                 
                 # Record data
-                time = perf_counter() - start - (pause * targets)
+                time = perf_counter() - start - (pause * targets) -intermission_time
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 
@@ -310,8 +314,8 @@ except KeyboardInterrupt:
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
 # Setup incomplete
-except NameError:
-    print('Setup incomplete')
+# except NameError:
+#     print('Setup incomplete')
 
 # Forgot to close the CSV file
 except PermissionError:
@@ -335,4 +339,3 @@ finally:
         connection.close()
     window.close()
     utilities.close(dongle)
-
