@@ -250,6 +250,7 @@ def getIndex(difference_tup, tolerance):
 def getSharing(mode, rounds, isAuto, pretest_rounds, training_rounds, 
                posttest_rounds):
 =======
+def getSharing(round_lst, mode=1, rounds=0, isAuto=True):
 >>>>>>> 556be1723355dc5bc9da4156e4252d04065b16cc
     """
     Receive/calculate the amount of cursor control and intensity for
@@ -317,6 +318,7 @@ def getSharing(mode, rounds, isAuto, pretest_rounds, training_rounds,
         student_intensity
 
 
+def getDevices(mode=1, isAuto=True, teacher_sensor=1, student_sensor=4):
     """
     Search for docked devices, make list, assign names and orientation,
     display battery levels, tare countdown, return devices
