@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isGodMode = False
+isGodMode = True
 
 time = 0
 target_time = 0
@@ -207,7 +207,8 @@ try:
         
         # Control and intensity ratios
         teacher_control, student_control, teacher_intensity, student_intensity\
-            = utilities.getSharing(round_lst, training_mode, rounds, isAuto)
+            = utilities.getSharing(pretest_rounds, training_rounds, 
+                                   posttest_rounds, training_mode, rounds, isAuto)
 
         # Pause for break in between rounds
         intermission_time += utilities.intermission(time, window)
@@ -221,7 +222,7 @@ try:
     
             point = graphics.Point(x_coord, y_coord)
             target = graphics.Circle(point, 35)
-            target.setOutline('green')
+            target.setOutline('red')
             target.setWidth(5)
             target.draw(window)
             

@@ -246,24 +246,16 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-<<<<<<< HEAD
-def getSharing(mode, rounds, isAuto, pretest_rounds, training_rounds, 
-               posttest_rounds):
-=======
-def getSharing(round_lst, mode=1, rounds=0, isAuto=True):
->>>>>>> 556be1723355dc5bc9da4156e4252d04065b16cc
+def getSharing(pretest_rounds, training_rounds, posttest_rounds, mode=1, rounds=0,
+               isAuto=True):
+    
     """
     Receive/calculate the amount of cursor control and intensity for
     student/teacher
     """
     
-    
-    # Need to revamp for pretest, training and post test rounds
-    
-    
-    
     # Increasing amount of student control for each round
-    round_control_dict = {1:0.1, 2:0.25, 3:0.50, 4:0.75, 5:0.90}
+    round_control_dict = {0:0.1, 1:0.25, 2:0.50, 3:0.75, 4:0.90}
     
     isTest = rounds < pretest_rounds or rounds >= posttest_rounds + training_rounds
     
@@ -728,3 +720,21 @@ def intermission(time, window):
     intermission_time = intermission_end - intermission_start
     
     return intermission_time
+
+
+def getRoundtype(rounds, pretest_rounds, training_rounds, posttest_rounds):
+    # Pre round setup
+    # Find which type of target sequence is being fielded
+    if rounds < pretest_rounds:
+        
+        round_type = 1
+        
+    elif rounds >= pretest_rounds and\
+        rounds < pretest_rounds+training_rounds:
+            
+        round_type = 2
+        
+    else:
+        round_type = 3
+        
+    return round_type
