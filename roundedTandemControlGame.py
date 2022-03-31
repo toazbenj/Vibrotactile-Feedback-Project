@@ -207,7 +207,7 @@ try:
         
         # Control and intensity ratios
         teacher_control, student_control, teacher_intensity, student_intensity\
-            = utilities.getSharing(training_mode, rounds, isAuto)
+            = utilities.getSharing(round_lst, training_mode, rounds, isAuto)
 
         # Pause for break in between rounds
         intermission_time += utilities.intermission(time, window)

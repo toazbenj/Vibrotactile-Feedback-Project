@@ -246,12 +246,20 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
+<<<<<<< HEAD
 def getSharing(mode, rounds, isAuto, pretest_rounds, training_rounds, 
                posttest_rounds):
+=======
+>>>>>>> 556be1723355dc5bc9da4156e4252d04065b16cc
     """
     Receive/calculate the amount of cursor control and intensity for
     student/teacher
     """
+    
+    
+    # Need to revamp for pretest, training and post test rounds
+    
+    
     
     # Increasing amount of student control for each round
     round_control_dict = {1:0.1, 2:0.25, 3:0.50, 4:0.75, 5:0.90}
@@ -309,7 +317,6 @@ def getSharing(mode, rounds, isAuto, pretest_rounds, training_rounds,
         student_intensity
 
 
-def getDevices(mode, isAuto, teacher_sensor, student_sensor):
     """
     Search for docked devices, make list, assign names and orientation,
     display battery levels, tare countdown, return devices
@@ -598,7 +605,7 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
     # Write to file
     with open(file, 'a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        
+
         # Demo program with just haptics, no graphics
         if isFollowMe:
             csvwriter.writerow([str(round(time, 3)),
@@ -613,7 +620,7 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
                                 str(round(difference_tup[2], 3)),
                                 str(round(raw_intensity, 3)),
                                 str(round(angle, 2))])
-        
+
         # Tandem control program
         else:
             csvwriter.writerow([str(round(time, 3)),
