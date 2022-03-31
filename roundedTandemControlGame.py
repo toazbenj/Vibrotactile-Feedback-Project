@@ -118,6 +118,7 @@ try:
     # Get rounds and training mode
     pretest_rounds, training_rounds, posttest_rounds, training_mode, teacher_sensor,\
         student_sensor = utilities.getAutoSetup()
+        
     round_lst = [pretest_rounds, training_rounds, posttest_rounds]
     overall_score = 100 * (8 * (pretest_rounds+posttest_rounds) + 
                            4 * training_rounds)

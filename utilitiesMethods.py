@@ -246,26 +246,29 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-def getSharing(mode, rounds, isAuto):
+def getSharing(mode, rounds, isAuto, pretest_rounds, training_rounds, 
+               posttest_rounds):
     """
     Receive/calculate the amount of cursor control and intensity for
     student/teacher
     """
     
     # Increasing amount of student control for each round
-    round_control_dict = {0:0.1, 1:0.25, 2:0.50, 3:0.75, 4:0.90}
+    round_control_dict = {1:0.1, 2:0.25, 3:0.50, 4:0.75, 5:0.90}
+    
+    isTest = rounds < pretest_rounds or rounds >= posttest_rounds + training_rounds
     
     # No Teacher, No Haptics
-    if mode == 1:
+    if isTest:
         teacher_control = 0
         student_control = 1
         teacher_intensity = 0
         student_intensity = 0
 
     # Teacher, No Haptics
-    elif mode == 2:
+    elif not isTest and mode == 2:
         if isAuto:
-            student_control = round_control_dict[rounds]
+            student_control = round_control_dict[rounds-pretest_rounds]
             teacher_control = 1-student_control
     
             # No haptics
@@ -286,7 +289,7 @@ def getSharing(mode, rounds, isAuto):
     else:
         if isAuto:
 
-            student_control = round_control_dict[rounds]
+            student_control = round_control_dict[rounds-pretest_rounds]
             teacher_control = 1-student_control
     
             # Amount of intensity is inverse of amount of control
@@ -670,7 +673,7 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
 
 
 def getAutoSetup():
-
+    '''Reads control file, gathers number of rounds and mode for each target sequence'''
     file = 'controlFile2.csv'
     # Open data file, write header
     with open(file, 'r', newline='') as csvfile:
@@ -690,6 +693,7 @@ def getAutoSetup():
 
 
 def intermission(time, window):
+    '''Pauses game in loop until user clicks to continue'''
     intermission_start = perf_counter()
     isPaused = True
     click = None
