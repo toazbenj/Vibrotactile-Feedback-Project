@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isGodMode = True
+isGodMode = False
 
 time = 0
 target_time = 0
@@ -97,7 +97,7 @@ testing_lst = [0, pi/2, pi, 3*pi/2]
 bounds = 600
 radius = 3/10*bounds
 
-position_offset = randint(30,330) * pi/180
+position_offset = randint(10,30) * pi/180
 
 # Haptics
 max_movement_angle = pi/4
@@ -234,23 +234,23 @@ try:
                 # Get position data
                 if training_mode == 1:
                     student_tup = student.getStreamingBatch()
-                    student_tup = (postion_offset+student_tup[0],
-                                   postion_offset+student_tup[1],
-                                   postion_offset+student_tup[2])
+                    
+                    # Switches coordinates for left/right and up/down
+                    # Originally +z forward and +y left
+                    # Now -y forward and +z left
+                    student_tup = (student_tup[0], student_tup[2], student_tup[1])
                     
                     teacher_tup = (0, 0, 0)
                     difference_tup = (0, 0, 0)
     
                 else:
                     teacher_tup = teacher.getStreamingBatch()
-                    teacher_tup = (postion_offset+teacher_tup[0],
-                                   postion_offset+teacher_tup[1],
-                                   postion_offset+teacher_tup[2])
+                    student_tup = (teacher_tup[0], teacher_tup[2], teacher_tup[1])
+
                     
                     student_tup = student.getStreamingBatch()
-                    student_tup = (postion_offset+student_tup[0],
-                                   postion_offset+student_tup[1],
-                                   postion_offset+student_tup[2])
+                    student_tup = (student_tup[0], student_tup[2], student_tup[1])
+
                     
                     difference_tup = (student_tup[0]-teacher_tup[0],
                                       student_tup[1]-teacher_tup[1],
@@ -319,19 +319,19 @@ try:
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# Note: the following except statements handle common errors that occur when 
-# the program runs properly but user error causes issues. If problem persists,
-# comment out except clauses to see the actual error
+# # Note: the following except statements handle common errors that occur when 
+# # the program runs properly but user error causes issues. If problem persists,
+# # comment out except clauses to see the actual error
 
-# For manual shutdown
+# # For manual shutdown
 except KeyboardInterrupt:
     print('Manual shutdown')
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
 # Setup incomplete
-# except NameError:
-#     print('Setup incomplete')
+except NameError:
+    print('Setup incomplete')
 
 # Forgot to close the CSV file
 except PermissionError:

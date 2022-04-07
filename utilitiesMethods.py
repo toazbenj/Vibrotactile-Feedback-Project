@@ -260,7 +260,7 @@ def getSharing(pretest_rounds, training_rounds, posttest_rounds, mode=1, rounds=
     isTest = rounds < pretest_rounds or rounds >= posttest_rounds + training_rounds
     
     # No Teacher, No Haptics
-    if isTest:
+    if isTest or mode == 1:
         teacher_control = 0
         student_control = 1
         teacher_intensity = 0
@@ -268,7 +268,7 @@ def getSharing(pretest_rounds, training_rounds, posttest_rounds, mode=1, rounds=
 
     # Teacher, No Haptics
     elif not isTest and mode == 2:
-        if isAuto:
+        if isAuto and mode == 2:
             student_control = round_control_dict[rounds-pretest_rounds]
             teacher_control = 1-student_control
     

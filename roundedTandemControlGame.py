@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isGodMode = True
+isGodMode = False
 
 time = 0
 target_time = 0
@@ -94,7 +94,7 @@ max_score = 100
 training_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 testing_lst = [0, pi/2, pi, 3*pi/2]
 
-bounds = 600
+bounds = 700
 radius = 3/10*bounds
 
 # Haptics
@@ -210,8 +210,10 @@ try:
             = utilities.getSharing(pretest_rounds, training_rounds, 
                                    posttest_rounds, training_mode, rounds, isAuto)
 
-        # Pause for break in between rounds
-        intermission_time += utilities.intermission(time, window)
+        # Pause for break in between testing and training
+        if rounds-1 < pretest_rounds or rounds >= posttest_rounds + training_rounds:
+            intermission_time += utilities.intermission(time, window)
+            
         time = perf_counter() - start - (pause * targets) - intermission_time
 
         # Iterate through each target attempt
@@ -309,7 +311,7 @@ try:
 # the program runs properly but user error causes issues. If problem persists,
 # comment out except clauses to see the actual error
 
-# For manual shutdown
+# # For manual shutdown
 except KeyboardInterrupt:
     print('Manual shutdown')
     print('\nYour time is {}.'.format(round(time, 2)))
