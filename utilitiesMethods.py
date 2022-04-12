@@ -671,6 +671,36 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return False
 
 
+def getAutoSetup1():
+    '''Reads control file, gathers number of rounds and mode for each target sequence'''
+    file = 'controlFile2.csv'
+    # Open data file, write header
+    with open(file, 'r', newline='') as csvfile:
+        csvreader = csv.reader(csvfile)
+        next(csvreader)
+        next(csvreader)
+        units = next(csvreader)
+        
+        next(csvreader)
+        next(csvreader)
+        blocks = next(csvreader)
+
+    pretest_rounds = int(units[0])
+    training_rounds = int(units[1])
+    posttest_rounds = int(units[2])
+    mode = int(units[3])
+    teacher_sensor = int(units[4])    
+    student_sensor = int(units[5])
+    
+    pretest_blocks = int(blocks[0])
+    training_blocks = int(blocks[1])
+    posttest_blocks = int(blocks[2])
+    
+    return pretest_rounds, training_rounds, posttest_rounds, mode,\
+        student_sensor, teacher_sensor, pretest_blocks,  training_blocks,\
+            posttest_blocks
+            
+
 def getAutoSetup():
     '''Reads control file, gathers number of rounds and mode for each target sequence'''
     file = 'controlFile2.csv'
@@ -678,17 +708,28 @@ def getAutoSetup():
     with open(file, 'r', newline='') as csvfile:
         csvreader = csv.reader(csvfile)
         next(csvreader)
-        row = next(csvreader)
-            
-    pretest_rounds = int(row[0])
-    training_rounds = int(row[1])
-    posttest_rounds = int(row[2])
-    mode = int(row[3])
-    teacher_sensor = int(row[4])    
-    student_sensor = int(row[5])
+        next(csvreader)
+        units = next(csvreader)
+        
+        next(csvreader)
+        next(csvreader)
+        next(csvreader)
+        blocks = next(csvreader)
+
+    pretest_units = int(units[0])
+    training_units = int(units[1])
+    posttest_units = int(units[2])
+    training_mode = int(units[3])
+    student_sensor = int(units[5])
+    teacher_sensor = int(units[4])    
     
-    return pretest_rounds, training_rounds, posttest_rounds, mode,\
-        teacher_sensor, student_sensor
+    pretest_blocks = int(blocks[0])
+    training_blocks = int(blocks[1])
+    posttest_blocks = int(blocks[2])
+    
+    return pretest_units, training_units, posttest_units, training_mode, \
+        teacher_sensor, student_sensor, pretest_blocks,  training_blocks,\
+            posttest_blocks
 
 
 def intermission(time, window):

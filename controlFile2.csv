@@ -1,9 +1,15 @@
-Pretesting Rounds,Training Rounds,Post Testing Rounds,Training Type/Mode,Teacher Sensor,Student Sensor,,,,,,,,,
-1,5,1,1,1,4,,,,,,,,,
-Mode,,,,,,,,,,,,,,
-"Training, No Teacher, No Haptics",1,,,"			
+Individual Round Units,,,,,,,,,,,,,,
+Pretesting,Training,Post Testing,Training Type/Mode,Teacher Sensor,Student Sensor,,,,,,,,,
+1,5,1,3,3,1,,,,,,,,,
+,,,,"			
 ""Training",,,,,"			
 ""Training",,,,,"			
 "
+Round Blocks,,,,,,,,,,,,,,
+Pretesting,Training,Post Testing,,,,,,,,,,,,
+1,1,1,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+Training Mode,,,,,,,,,,,,,,
+"No Teacher, No Haptics",1,,,,,,,,,,,,,
 "Teacher, No Haptics",2,,,,,,,,,,,,,
 "Teacher, Haptics",3,,,,,,,,,,,,,

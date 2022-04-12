@@ -74,17 +74,15 @@ from time import sleep
 isAuto = True
 isGodMode = False
 
-
 time = 0
 target_time = 0
 previous_target_time = 0
 target_achieved_start = 0
 
-pause = 0.5
+pause = 1
 
-
-tolerance = pi/48
-miss_margin = 10
+tolerance = pi/24
+miss_margin = 20
 speed_limit = 15
 
 score = 0
@@ -102,7 +100,7 @@ position_offset = randint(10,30) * pi/180
 text = graphics.Point(0,0)
 
 # Haptics
-max_movement_angle = pi/4
+max_movement_angle = pi/8
 index = ''
 iteration = 4
 commandTime = 0
@@ -119,10 +117,17 @@ intermission_time = 0
 
 # Pre Game start setup
 try:
-    # Get rounds and training mode
-    pretest_rounds, training_rounds, posttest_rounds, training_mode, teacher_sensor,\
-        student_sensor = utilities.getAutoSetup()
-        
+    # Get blocks, units and training mode
+    pretest_units, training_units, posttest_units, training_mode, teacher_sensor,\
+        student_sensor, pretest_blocks,  training_blocks, posttest_blocks\
+            = utilities.getAutoSetup()
+    
+    # Number of round units times number of blocks is number of times through 
+    # each sequence
+    pretest_rounds = pretest_units * pretest_blocks
+    training_rounds = training_units * training_blocks
+    posttest_rounds = posttest_units * posttest_blocks
+    
     round_lst = [pretest_rounds, training_rounds, posttest_rounds]
     overall_score = 100 * (15 * (pretest_rounds+posttest_rounds) + 
                            7 * training_rounds)
@@ -215,7 +220,7 @@ try:
             if count%2 != 0:
                 rand_lst[count] = 0
                 rand_lst.append(t)
-                
+                 
             count += 1
             
         rand_lst.append(0)
@@ -225,8 +230,13 @@ try:
             = utilities.getSharing(pretest_rounds, training_rounds, 
                                    posttest_rounds, training_mode, rounds, isAuto)
 
-        # Pause for break in between rounds
-        intermission_time += utilities.intermission(time, window)
+        # Pause for break in between blocks for training, rounds for testing
+        if (rounds % (pretest_units) == 0 and round_type == 1) or\
+            ((rounds - pretest_rounds - training_rounds) % (posttest_units) == 0 and round_type == 3) or\
+                ((rounds - pretest_rounds) % (training_units) == 0 and round_type == 2):
+              
+            intermission_time += utilities.intermission(time, window)
+            
         time = perf_counter() - start - intermission_time
 
         # Iterate through each target attempt
@@ -260,19 +270,64 @@ try:
                     # Switches coordinates for left/right and up/down
                     # Originally +z forward and +y left
                     # Now -y forward and +z left
-                    student_tup = (student_tup[0], student_tup[2], student_tup[1])
-                    
+                    try:
+                        student_tup = (student_tup[0], student_tup[2], student_tup[1])
+                    except TypeError:
+                        student_tup = (0,0,0)
+                        print("Student read failed")
+                        
+                        utilities.close(dongle)
+                        
+                        # Register and Tare Sensors
+                        if training_mode == 1:
+                            student, dongle, = utilities.getDevices(
+                                training_mode, isAuto, teacher_sensor, student_sensor)
+                        else:
+                            teacher, student, dongle, = utilities.getDevices(
+                                training_mode, isAuto, teacher_sensor, student_sensor)
+                                            
                     teacher_tup = (0, 0, 0)
                     difference_tup = (0, 0, 0)
     
                 else:
                     teacher_tup = teacher.getStreamingBatch()
-                    student_tup = (teacher_tup[0], teacher_tup[2], teacher_tup[1])
-
                     
+                    try:
+                        teacher_tup = (teacher_tup[0], teacher_tup[2], teacher_tup[1])
+                    except TypeError:
+                        teacher_tup = (0,0,0)
+                        print("Teacher read failed")
+                        
+                        utilities.close(dongle)
+                        
+                        # Register and Tare Sensors
+                        if training_mode == 1:
+                            student, dongle, = utilities.getDevices(
+                                training_mode, isAuto, teacher_sensor, student_sensor)
+                        else:
+                            teacher, student, dongle, = utilities.getDevices(
+                                training_mode, isAuto, teacher_sensor, student_sensor)
+                            
                     student_tup = student.getStreamingBatch()
-                    student_tup = (student_tup[0], student_tup[2], student_tup[1])
-
+                    
+                    try:
+                        student_tup = (student_tup[0], student_tup[2], student_tup[1])
+                    except TypeError:
+                        student_tup = (0,0,0)
+                        print("Student read failed")
+                        
+                        utilities.close(dongle)
+                        
+                        # Register and Tare Sensors
+                        if training_mode == 1:
+                            student, dongle, = utilities.getDevices(
+                                training_mode, isAuto, teacher_sensor, student_sensor)
+                        else:
+                            teacher, student, dongle, = utilities.getDevices(
+                                training_mode, isAuto, teacher_sensor, student_sensor)
+                    
+                    
+                    
                     
                     difference_tup = (student_tup[0]-teacher_tup[0],
                                       student_tup[1]-teacher_tup[1],
@@ -292,9 +347,20 @@ try:
                                        student_tup, teacher_control,
                                        student_control)
                 
-                # For testing purposes
-                if isGodMode:
-                    ball.move(x_coord-ball.x_center, y_coord-ball.y_center)
+                # # For testing purposes
+                # if isGodMode:
+                #         sleep(pause)
+                #         ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
+                        
+                #         ball.x_center = x_coord
+                #         ball.y_center = y_coord
+                            
+                #         # if x_coord == 300 and y_coord == 300:
+                #         #     ball.x_center = 300
+                #         #     ball.y_center = 300
+                            
+                #         sleep(pause)
+
                     
                 # Check if target is hit
                 x_diff = abs(ball.getCenter().x-target.getCenter().x)
@@ -334,9 +400,18 @@ try:
                         # Exit move loop
                         break
                     
-                    if isGodMode:
-                        ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
-                        sleep(pause)
+                    # if isGodMode:
+                    #     sleep(pause)
+                    #     ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
+                        
+                    #     ball.x_center = x_coord
+                    #     ball.y_center = y_coord
+                            
+                    #     # if x_coord == 300 and y_coord == 300:
+                    #     #     ball.x_center = 300
+                    #     #     ball.y_center = 300
+                            
+                    #     sleep(pause)
                         
                 # Reset when target overshot
                 else:
@@ -347,6 +422,8 @@ try:
                 target_time = 0
                 
                 # Record data
+                print("Signal strength: {}".format(dongle.getSignalStrength()))
+
                 time = perf_counter() - start -intermission_time
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
@@ -362,9 +439,9 @@ try:
 # # the program runs properly but user error causes issues. If problem persists,
 # # comment out except clauses to see the actual error
 
-# # For manual shutdown
+# # # For manual shutdown
 except KeyboardInterrupt:
-    print('Manual shutdown')
+    print('\nManual shutdown')
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
@@ -372,23 +449,23 @@ except KeyboardInterrupt:
 # except NameError:
 #     print('Setup incomplete')
 
-# Forgot to close the CSV file
-except PermissionError:
-    print('Close CSV File')
+# # Forgot to close the CSV file
+# except PermissionError:
+#     print('Close CSV File')
 
-# Motion sensors not on or need to be charged
-except AttributeError:
-    print('Turn on motion sensors')
+# # Motion sensors not on or need to be charged
+# except AttributeError:
+#     print('Turn on motion sensors')
 
-# Dongle wasn't closed properly or open in another program
-except serial.SerialException:
-    print('Refresh kernal or check dongle connection')
+# # Dongle wasn't closed properly or open in another program
+# except serial.SerialException:
+#     print('Refresh kernal or check dongle connection')
 
-# Client connection needs to refresh
-except OSError:
-    print('Run again to refresh client connection')
+# # Client connection needs to refresh
+# except OSError:
+#     print('Run again to refresh client connection')
 
-# No matter what, close peripherals
+# # No matter what, close peripherals
 finally:
     if training_mode == 3:
         connection.close()
