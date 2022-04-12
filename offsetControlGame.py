@@ -67,21 +67,21 @@ import csv
 from math import sin
 from math import cos
 import socket
-
+from time import sleep
 # Sentinels/Conditions
 
 # Graphics/Gaming
 isAuto = True
 isGodMode = False
 
+
 time = 0
 target_time = 0
 previous_target_time = 0
+target_achieved_start = 0
 
-if isGodMode:
-    pause = 0.5
-else:
-    pause = 3
+pause = 0.5
+
 
 tolerance = pi/48
 miss_margin = 10
@@ -91,13 +91,15 @@ score = 0
 targets = 0
 max_score = 100
 
-training_lst = [0, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
-testing_lst = [0, pi/2, pi, 3*pi/2]
+training_lst = [2*pi, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
+testing_lst = [2*pi, pi/2, pi, 3*pi/2]
 
 bounds = 600
 radius = 3/10*bounds
+isCenter = False
 
 position_offset = randint(10,30) * pi/180
+text = graphics.Point(0,0)
 
 # Haptics
 max_movement_angle = pi/4
@@ -122,8 +124,8 @@ try:
         student_sensor = utilities.getAutoSetup()
         
     round_lst = [pretest_rounds, training_rounds, posttest_rounds]
-    overall_score = 100 * (8 * (pretest_rounds+posttest_rounds) + 
-                           4 * training_rounds)
+    overall_score = 100 * (15 * (pretest_rounds+posttest_rounds) + 
+                           7 * training_rounds)
     
     if training_mode == 3:
         # Link to 2nd computer
@@ -207,6 +209,17 @@ try:
                 except IndexError:
                     rand_lst.append(i)
         
+        # Puts center targets in between random targets
+        count = 0
+        for t in rand_lst:
+            if count%2 != 0:
+                rand_lst[count] = 0
+                rand_lst.append(t)
+                
+            count += 1
+            
+        rand_lst.append(0)
+        
         # Control and intensity ratios
         teacher_control, student_control, teacher_intensity, student_intensity\
             = utilities.getSharing(pretest_rounds, training_rounds, 
@@ -214,14 +227,23 @@ try:
 
         # Pause for break in between rounds
         intermission_time += utilities.intermission(time, window)
-        time = perf_counter() - start - (pause * targets) - intermission_time
+        time = perf_counter() - start - intermission_time
 
         # Iterate through each target attempt
         for i in rand_lst:
             # Make target
-            x_coord = bounds * (1/2) + radius * (cos(i))
-            y_coord = bounds * (1/2) + radius * (sin(i))
-    
+            
+            # Reach target
+            if i != 0:
+                x_coord = bounds * (1/2) + radius * (cos(i))
+                y_coord = bounds * (1/2) + radius * (sin(i))
+            # Center reset target
+            else:
+                x_coord = bounds/2
+                y_coord = bounds/2
+                
+            count += 1
+            
             point = graphics.Point(x_coord, y_coord)
             target = graphics.Circle(point, 35)
             target.setOutline('red')
@@ -279,42 +301,59 @@ try:
                 y_diff = abs(ball.getCenter().y-target.getCenter().y)
                     
                 if x_diff < miss_margin and y_diff < miss_margin:
-                    target.undraw()
+                    target.setOutline('green')
+
+                    # First hit
+                    if target_achieved_start == 0:
+                        target_achieved_start = time
                     
-                    # Calculate time taken and calculate score for attempt
-                    target_time = time - previous_target_time
-                    score += utilities.displayScore(bounds, window, 
-                                                    target_time, pause, 
-                                                    max_score)
-                    previous_target_time += target_time
-                    targets += 1
+                    # Kept within target
+                    elif time - target_achieved_start > 0.5:
+                        
                     
-                    # Record data
-                    time = perf_counter() - start - (pause * targets) - intermission_time
-                    utilities.writeData(file, time, teacher_tup, student_tup,
-                                        difference_tup, raw_intensity,
-                                        teacher_intensity, student_intensity, 
-                                        angle, score, target_time, ball,
-                                        target, training_mode,
-                                        round_type, isFollowMe)
+                        target.undraw()
+                        text.undraw()
+    
+                        # Calculate time taken and calculate score for attempt
+                        target_time = time - previous_target_time
+                        round_score, text = utilities.displayScore(bounds, window, 
+                                                        target_time, max_score)
+                        score += round_score
+                        previous_target_time += target_time
+                        targets += 1
+                        
+                        # Record data
+                        time = perf_counter() - start - intermission_time
+                        utilities.writeData(file, time, teacher_tup, student_tup,
+                                            difference_tup, raw_intensity,
+                                            teacher_intensity, student_intensity, 
+                                            angle, score, target_time, ball,
+                                            target, training_mode,
+                                            round_type, isFollowMe)
+                        
+                        # Exit move loop
+                        break
                     
                     if isGodMode:
                         ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
-
-                    # Exit move loop
-                    break
+                        sleep(pause)
+                        
+                # Reset when target overshot
+                else:
+                    target.setOutline('red')
+                    target_achieved_start = 0 
                 
                 # Set to 0 for recording purposes
                 target_time = 0
                 
                 # Record data
-                time = perf_counter() - start - (pause * targets) -intermission_time
+                time = perf_counter() - start -intermission_time
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 
                                     angle, score, target_time, ball, target,
                                     training_mode, round_type, isFollowMe)
-
+                
     # Display Results
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
@@ -329,9 +368,9 @@ except KeyboardInterrupt:
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# Setup incomplete
-except NameError:
-    print('Setup incomplete')
+# # Setup incomplete
+# except NameError:
+#     print('Setup incomplete')
 
 # Forgot to close the CSV file
 except PermissionError:

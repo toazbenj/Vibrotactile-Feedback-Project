@@ -532,7 +532,7 @@ def positionMove(window, bounds, max_movement_angle, ball, teacher_tup=0,
     ball.y_center = y_pos
 
 
-def displayScore(bounds, window, target_time, pause, max_score):
+def displayScore(bounds, window, target_time, max_score):
     '''
     Calculate target round score, briefly display text and resume play
     '''
@@ -554,10 +554,8 @@ def displayScore(bounds, window, target_time, pause, max_score):
     text = graphics.Text(labelCenter,labelText)
     text.setFill('white')
     text.draw(window)
-    sleep(pause)
-    text.undraw()
         
-    return target_score
+    return target_score, text
     
 
 def checkTolerance(check_tup, tolerance):
