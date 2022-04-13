@@ -81,7 +81,7 @@ target_achieved_start = 0
 
 pause = 1
 
-tolerance = pi/24
+tolerance = pi/48
 miss_margin = 20
 speed_limit = 15
 
