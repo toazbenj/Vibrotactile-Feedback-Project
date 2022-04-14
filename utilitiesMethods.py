@@ -246,30 +246,27 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-def getSharing(pretest_rounds, training_rounds, posttest_rounds, mode=1, rounds=0,
-               isAuto=True):
+def getSharing(round_type, round_lst, mode=1, rounds=0, isAuto=True):
     
     """
     Receive/calculate the amount of cursor control and intensity for
     student/teacher
     """
     
-    # Increasing amount of student control for each round
+    # Increasing amount of student control for each round, must be 5 rounds
     round_control_dict = {0:0.1, 1:0.25, 2:0.50, 3:0.75, 4:0.90}
-    
-    isTest = rounds < pretest_rounds or rounds >= posttest_rounds + training_rounds
-    
+        
     # No Teacher, No Haptics
-    if isTest or mode == 1:
+    if round_type == 1 or round_type == 3 or mode == 1:
         teacher_control = 0
         student_control = 1
         teacher_intensity = 0
         student_intensity = 0
 
     # Teacher, No Haptics
-    elif not isTest and mode == 2:
+    elif round_type == 2 and mode == 2:
         if isAuto and mode == 2:
-            student_control = round_control_dict[rounds-pretest_rounds]
+            student_control = round_control_dict[rounds-round_lst[0]]
             teacher_control = 1-student_control
     
             # No haptics
@@ -290,7 +287,7 @@ def getSharing(pretest_rounds, training_rounds, posttest_rounds, mode=1, rounds=
     else:
         if isAuto:
 
-            student_control = round_control_dict[rounds-pretest_rounds]
+            student_control = round_control_dict[rounds-round_lst[0]]
             teacher_control = 1-student_control
     
             # Amount of intensity is inverse of amount of control
@@ -671,65 +668,48 @@ def testPos(pos_tup1, pos_tup2, tolerance=0):
         return False
 
 
-def getAutoSetup1():
-    '''Reads control file, gathers number of rounds and mode for each target sequence'''
-    file = 'controlFile2.csv'
-    # Open data file, write header
-    with open(file, 'r', newline='') as csvfile:
-        csvreader = csv.reader(csvfile)
-        next(csvreader)
-        next(csvreader)
-        units = next(csvreader)
-        
-        next(csvreader)
-        next(csvreader)
-        blocks = next(csvreader)
-
-    pretest_rounds = int(units[0])
-    training_rounds = int(units[1])
-    posttest_rounds = int(units[2])
-    mode = int(units[3])
-    teacher_sensor = int(units[4])    
-    student_sensor = int(units[5])
-    
-    pretest_blocks = int(blocks[0])
-    training_blocks = int(blocks[1])
-    posttest_blocks = int(blocks[2])
-    
-    return pretest_rounds, training_rounds, posttest_rounds, mode,\
-        student_sensor, teacher_sensor, pretest_blocks,  training_blocks,\
-            posttest_blocks
-            
-
 def getAutoSetup():
     '''Reads control file, gathers number of rounds and mode for each target sequence'''
     file = 'controlFile2.csv'
+    parameters_lst = []
+    units_lst = []
+    blocks_lst = []
+    
     # Open data file, write header
     with open(file, 'r', newline='') as csvfile:
         csvreader = csv.reader(csvfile)
+        
+        # 1st line of parameters, skip header lines
+        next(csvreader)
+        next(csvreader)
+        parameters = next(csvreader)
+        
+        # 2nd line of units
+        next(csvreader)
         next(csvreader)
         next(csvreader)
         units = next(csvreader)
         
+        # 3rd line of blocks
         next(csvreader)
         next(csvreader)
         next(csvreader)
         blocks = next(csvreader)
-
-    pretest_units = int(units[0])
-    training_units = int(units[1])
-    posttest_units = int(units[2])
-    training_mode = int(units[3])
-    student_sensor = int(units[5])
-    teacher_sensor = int(units[4])    
     
-    pretest_blocks = int(blocks[0])
-    training_blocks = int(blocks[1])
-    posttest_blocks = int(blocks[2])
     
-    return pretest_units, training_units, posttest_units, training_mode, \
-        teacher_sensor, student_sensor, pretest_blocks,  training_blocks,\
-            posttest_blocks
+    for i in parameters:
+        if i != "":
+            parameters_lst.append(int(i))
+        
+    for i in units:
+        if i != "":
+            units_lst.append(int(i))
+       
+    for i in blocks:
+        if i != "":
+            blocks_lst.append(int(i))
+    
+    return parameters_lst, units_lst, blocks_lst
 
 
 def intermission(time, window):
@@ -761,19 +741,16 @@ def intermission(time, window):
     return intermission_time
 
 
-def getRoundtype(rounds, pretest_rounds, training_rounds, posttest_rounds):
-    # Pre round setup
+def getRoundType(rounds, round_lst):
     # Find which type of target sequence is being fielded
-    if rounds < pretest_rounds:
+    
+    isTest = False
+    
+    # is Test
+    if rounds < round_lst[0] or\
+        (rounds >= sum(round_lst[0:2]) and rounds < sum(round_lst[0:3]))\
+            or rounds >= sum(round_lst[0:4]):
         
-        round_type = 1
-        
-    elif rounds >= pretest_rounds and\
-        rounds < pretest_rounds+training_rounds:
-            
-        round_type = 2
-        
-    else:
-        round_type = 3
-        
-    return round_type
+        isTest = True
+    
+    return isTest

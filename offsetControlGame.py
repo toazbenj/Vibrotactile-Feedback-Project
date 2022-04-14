@@ -67,12 +67,12 @@ import csv
 from math import sin
 from math import cos
 import socket
-from time import sleep
+
 # Sentinels/Conditions
 
 # Graphics/Gaming
 isAuto = True
-isGodMode = False
+isEasyMode = True
 
 time = 0
 target_time = 0
@@ -111,26 +111,37 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
           'Difference-z', 'Teacher Intensity', 'Student Intensity',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
-          'Target-y', 'Score','Target Duration', 'Training Mode', 'Round Type']
+          'Target-y', 'Score','Target Duration', 'Training Mode', 'Is Testing Boolean']
 isFollowMe = False
 intermission_time = 0
 
 # Pre Game start setup
 try:
     # Get blocks, units and training mode
-    pretest_units, training_units, posttest_units, training_mode, teacher_sensor,\
-        student_sensor, pretest_blocks,  training_blocks, posttest_blocks\
-            = utilities.getAutoSetup()
+    parameters_lst, units_lst, blocks_lst= utilities.getAutoSetup()
     
-    # Number of round units times number of blocks is number of times through 
-    # each sequence
-    pretest_rounds = pretest_units * pretest_blocks
-    training_rounds = training_units * training_blocks
-    posttest_rounds = posttest_units * posttest_blocks
+    # Device setup
+    training_mode = parameters_lst[0]
+    teacher_sensor = parameters_lst[1]
+    student_sensor = parameters_lst[2]
+
+    # Calculate number of each type of rounds
+    pretest_rounds = units_lst[0] * blocks_lst[0]
+    training_one_rounds = units_lst[1] * blocks_lst[1]
+    midtest_rounds = units_lst[2] * blocks_lst[2]
+    training_two_rounds = units_lst[3] * blocks_lst[3]
+    posttest_rounds = units_lst[4] * blocks_lst[4]
     
-    round_lst = [pretest_rounds, training_rounds, posttest_rounds]
-    overall_score = 100 * (15 * (pretest_rounds+posttest_rounds) + 
-                           7 * training_rounds)
+    round_lst = [pretest_rounds, training_one_rounds, midtest_rounds, 
+                 training_two_rounds, posttest_rounds]
+    
+    # Round numbers after which block gaps occur
+    pause_sentinel_lst = [sum(round_lst[0:1])-1, sum(round_lst[0:2])-1, 
+                          sum(round_lst[0:3])-1, sum(round_lst[0:4])-1]
+    
+    overall_score = 100 * (16 * (
+        pretest_rounds + posttest_rounds + midtest_rounds) + 
+        8 * (training_one_rounds + training_two_rounds))
     
     if training_mode == 3:
         # Link to 2nd computer
@@ -174,25 +185,25 @@ try:
     ball.setFill('white')
     ball.draw(window)
     
-    # Main loop, iterate through each round, 3 types
+    # Pause before start
+    intermission_time += utilities.intermission(time, window)
+
+    
+    # Main loop, iterate through each round
     for rounds in range(sum(round_lst)):
+        
         # Pre round setup
         # Find which type of target sequence is being fielded
-        if rounds < pretest_rounds:
-            
-            round_type = 1
-            
-        elif rounds >= pretest_rounds and\
-            rounds < pretest_rounds+training_rounds:
-                
-            round_type = 2
-            
-        else:
-            round_type = 3
-            
+        
+        isTest = utilities.getRoundType(rounds, round_lst)
+        
+        # For testing
+        if isEasyMode:
+            print(rounds, isTest)
+        
         # Generates random list of rotation angles
         rand_lst = []
-        if round_type == 2:
+        if not isTest:
              # 4 Targets for training
             for i in testing_lst:
                 position = randint(0, 4)
@@ -202,6 +213,9 @@ try:
                     rand_lst.append(move)
                 except IndexError:
                     rand_lst.append(i)
+            
+            if isEasyMode:
+                rand_lst = [0,0,0,0]
             
         else:
             # 8 Targets for testing
@@ -213,7 +227,10 @@ try:
                     rand_lst.append(move)
                 except IndexError:
                     rand_lst.append(i)
-        
+                    
+            if isEasyMode:
+                rand_lst = [0,0,0,0,0,0,0,0]
+                
         # Puts center targets in between random targets
         count = 0
         for t in rand_lst:
@@ -227,15 +244,14 @@ try:
         
         # Control and intensity ratios
         teacher_control, student_control, teacher_intensity, student_intensity\
-            = utilities.getSharing(pretest_rounds, training_rounds, 
-                                   posttest_rounds, training_mode, rounds, isAuto)
+            = utilities.getSharing(round_lst, rounds, isAuto)
 
-        # Pause for break in between blocks for training, rounds for testing
-        if (rounds % (pretest_units) == 0 and round_type == 1) or\
-            ((rounds - pretest_rounds - training_rounds) % (posttest_units) == 0 and round_type == 3) or\
-                ((rounds - pretest_rounds) % (training_units) == 0 and round_type == 2):
-              
+        # Pause for break in between testing and training blocks
+        if rounds in pause_sentinel_lst:
             intermission_time += utilities.intermission(time, window)
+            
+            if isEasyMode:
+                print()
             
         time = perf_counter() - start - intermission_time
 
@@ -326,9 +342,6 @@ try:
                             teacher, student, dongle, = utilities.getDevices(
                                 training_mode, isAuto, teacher_sensor, student_sensor)
                     
-                    
-                    
-                    
                     difference_tup = (student_tup[0]-teacher_tup[0],
                                       student_tup[1]-teacher_tup[1],
                                       student_tup[2]-teacher_tup[2])
@@ -346,22 +359,7 @@ try:
                                        max_movement_angle, ball, teacher_tup,
                                        student_tup, teacher_control,
                                        student_control)
-                
-                # # For testing purposes
-                # if isGodMode:
-                #         sleep(pause)
-                #         ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
-                        
-                #         ball.x_center = x_coord
-                #         ball.y_center = y_coord
-                            
-                #         # if x_coord == 300 and y_coord == 300:
-                #         #     ball.x_center = 300
-                #         #     ball.y_center = 300
-                            
-                #         sleep(pause)
 
-                    
                 # Check if target is hit
                 x_diff = abs(ball.getCenter().x-target.getCenter().x)
                 y_diff = abs(ball.getCenter().y-target.getCenter().y)
@@ -395,23 +393,10 @@ try:
                                             teacher_intensity, student_intensity, 
                                             angle, score, target_time, ball,
                                             target, training_mode,
-                                            round_type, isFollowMe)
+                                            isTest, isFollowMe)
                         
                         # Exit move loop
                         break
-                    
-                    # if isGodMode:
-                    #     sleep(pause)
-                    #     ball.move(-(x_coord-ball.x_center), -(y_coord-ball.y_center))
-                        
-                    #     ball.x_center = x_coord
-                    #     ball.y_center = y_coord
-                            
-                    #     # if x_coord == 300 and y_coord == 300:
-                    #     #     ball.x_center = 300
-                    #     #     ball.y_center = 300
-                            
-                    #     sleep(pause)
                         
                 # Reset when target overshot
                 else:
@@ -422,50 +407,50 @@ try:
                 target_time = 0
                 
                 # Record data
-                print("Signal strength: {}".format(dongle.getSignalStrength()))
+                # print("Signal strength: {}".format(dongle.getSignalStrength()))
 
                 time = perf_counter() - start -intermission_time
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 
                                     angle, score, target_time, ball, target,
-                                    training_mode, round_type, isFollowMe)
+                                    training_mode, isTest, isFollowMe)
                 
     # Display Results
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# # Note: the following except statements handle common errors that occur when 
-# # the program runs properly but user error causes issues. If problem persists,
-# # comment out except clauses to see the actual error
+# Note: the following except statements handle common errors that occur when 
+# the program runs properly but user error causes issues. If problem persists,
+# comment out except clauses to see the actual error
 
-# # # For manual shutdown
+# For manual shutdown
 except KeyboardInterrupt:
     print('\nManual shutdown')
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# # Setup incomplete
-# except NameError:
-#     print('Setup incomplete')
+# Setup incomplete
+except NameError:
+    print('Setup incomplete')
 
-# # Forgot to close the CSV file
-# except PermissionError:
-#     print('Close CSV File')
+# Forgot to close the CSV file
+except PermissionError:
+    print('Close CSV File')
 
-# # Motion sensors not on or need to be charged
-# except AttributeError:
-#     print('Turn on motion sensors')
+# Motion sensors not on or need to be charged
+except AttributeError:
+    print('Turn on motion sensors')
 
 # # Dongle wasn't closed properly or open in another program
-# except serial.SerialException:
-#     print('Refresh kernal or check dongle connection')
+except serial.SerialException:
+    print('Refresh kernal or check dongle connection')
 
-# # Client connection needs to refresh
-# except OSError:
-#     print('Run again to refresh client connection')
+# Client connection needs to refresh
+except OSError:
+    print('Run again to refresh client connection')
 
-# # No matter what, close peripherals
+# No matter what, close peripherals
 finally:
     if training_mode == 3:
         connection.close()
