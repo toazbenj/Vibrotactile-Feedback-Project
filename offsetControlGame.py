@@ -78,6 +78,7 @@ time = 0
 target_time = 0
 previous_target_time = 0
 target_achieved_start = 0
+reconnect_time = 0
 
 pause = 1
 
@@ -106,7 +107,6 @@ iteration = 4
 commandTime = 0
 
 # Data
-file = 'autoDemo.csv'
 header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
           'Difference-z', 'Teacher Intensity', 'Student Intensity',
@@ -124,6 +124,7 @@ try:
     training_mode = parameters_lst[0]
     teacher_sensor = parameters_lst[1]
     student_sensor = parameters_lst[2]
+    file = parameters_lst[3]
 
     # Calculate number of each type of rounds
     pretest_rounds = units_lst[0] * blocks_lst[0]
@@ -199,7 +200,7 @@ try:
         
         # For testing
         if isEasyMode:
-            print(rounds, isTest)
+            print(rounds + 1, isTest)
         
         # Generates random list of rotation angles
         rand_lst = []
@@ -253,8 +254,9 @@ try:
             if isEasyMode:
                 print()
             
-        time = perf_counter() - start - intermission_time
+        time = perf_counter() - start - intermission_time - reconnect_time
 
+        target_count = 1
         # Iterate through each target attempt
         for i in rand_lst:
             # Make target
@@ -288,11 +290,12 @@ try:
                     # Now -y forward and +z left
                     try:
                         student_tup = (student_tup[0], student_tup[2], student_tup[1])
+                        
                     except TypeError:
                         student_tup = (0,0,0)
-                        print("Student read failed")
-                        
+                        drop_start_time = time
                         utilities.close(dongle)
+                        print("Student read failed")
                         
                         # Register and Tare Sensors
                         if training_mode == 1:
@@ -301,13 +304,18 @@ try:
                         else:
                             teacher, student, dongle, = utilities.getDevices(
                                 training_mode, isAuto, teacher_sensor, student_sensor)
-                                            
+                            
+                        time = perf_counter() - start - intermission_time - reconnect_time
+                        drop_end_time = time
+                        reconnect_time += drop_end_time - drop_start_time
+                    
                     teacher_tup = (0, 0, 0)
                     difference_tup = (0, 0, 0)
     
                 else:
                     teacher_tup = teacher.getStreamingBatch()
                     
+                    # Signal drop reconnect
                     try:
                         teacher_tup = (teacher_tup[0], teacher_tup[2], teacher_tup[1])
                     except TypeError:
@@ -324,8 +332,13 @@ try:
                             teacher, student, dongle, = utilities.getDevices(
                                 training_mode, isAuto, teacher_sensor, student_sensor)
                             
+                        time = perf_counter() - start - intermission_time - reconnect_time
+                        drop_end_time = time
+                        reconnect_time += drop_end_time - drop_start_time
+                        
                     student_tup = student.getStreamingBatch()
                     
+                    # Signal drop reconnect
                     try:
                         student_tup = (student_tup[0], student_tup[2], student_tup[1])
                     except TypeError:
@@ -341,7 +354,11 @@ try:
                         else:
                             teacher, student, dongle, = utilities.getDevices(
                                 training_mode, isAuto, teacher_sensor, student_sensor)
-                    
+                            
+                        time = perf_counter() - start - intermission_time - reconnect_time
+                        drop_end_time = time
+                        reconnect_time += drop_end_time - drop_start_time
+                        
                     difference_tup = (student_tup[0]-teacher_tup[0],
                                       student_tup[1]-teacher_tup[1],
                                       student_tup[2]-teacher_tup[2])
@@ -387,7 +404,7 @@ try:
                         targets += 1
                         
                         # Record data
-                        time = perf_counter() - start - intermission_time
+                        time = perf_counter() - start - intermission_time - reconnect_time
                         utilities.writeData(file, time, teacher_tup, student_tup,
                                             difference_tup, raw_intensity,
                                             teacher_intensity, student_intensity, 
@@ -395,7 +412,11 @@ try:
                                             target, training_mode,
                                             isTest, isFollowMe)
                         
+                        if isEasyMode:
+                            print('Target {}'.format(target_count))
+                        
                         # Exit move loop
+                        target_count += 1
                         break
                         
                 # Reset when target overshot
@@ -408,8 +429,10 @@ try:
                 
                 # Record data
                 # print("Signal strength: {}".format(dongle.getSignalStrength()))
-
-                time = perf_counter() - start -intermission_time
+                time = perf_counter() - start - intermission_time - reconnect_time
+                
+                print(time)
+                
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
                                     teacher_intensity, student_intensity, 

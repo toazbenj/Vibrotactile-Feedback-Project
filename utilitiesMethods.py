@@ -699,7 +699,10 @@ def getAutoSetup():
     
     for i in parameters:
         if i != "":
-            parameters_lst.append(int(i))
+            try:
+                parameters_lst.append(int(i))
+            except ValueError:
+                parameters_lst.append(i)
         
     for i in units:
         if i != "":
@@ -754,3 +757,4 @@ def getRoundType(rounds, round_lst):
         isTest = True
     
     return isTest
+

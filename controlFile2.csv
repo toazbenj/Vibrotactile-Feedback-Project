@@ -1,6 +1,6 @@
 Device Parameters,,,,,,,,,,,,,,
-Training Type/Mode,Teacher Sensor,Student Sensor,,,,,,,,,,,,
-1,1,4,,,,,,,,,,,,
+Training Type/Mode,Teacher Sensor,Student Sensor,Data File Name,,,,,,,,,,,
+1,1,4,data.csv,,,,,,,,,,,
 ,,,,,,,,,,,,,,"			
 "
 Individual Round Units,,,,,,,,,,,,,,
