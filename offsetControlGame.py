@@ -244,8 +244,8 @@ try:
         rand_lst.append(0)
         
         # Control and intensity ratios
-        teacher_control, student_control, teacher_intensity, student_intensity\
-            = utilities.getSharing(round_lst, rounds, isAuto)
+        teacher_control, student_control, teacher_intensity, student_intensity \
+            = utilities.getSharing(isTest, round_lst, training_mode, rounds, isAuto)
 
         # Pause for break in between testing and training blocks
         if rounds in pause_sentinel_lst:
@@ -289,7 +289,7 @@ try:
                     # Originally +z forward and +y left
                     # Now -y forward and +z left
                     try:
-                        student_tup = (student_tup[0], student_tup[2], student_tup[1])
+                       test_index = student_tup[0]
                         
                     except TypeError:
                         student_tup = (0,0,0)
@@ -317,11 +317,12 @@ try:
                     
                     # Signal drop reconnect
                     try:
-                        teacher_tup = (teacher_tup[0], teacher_tup[2], teacher_tup[1])
+                        test_index = teacher_tup[0]
                     except TypeError:
                         teacher_tup = (0,0,0)
                         print("Teacher read failed")
-                        
+                        drop_start_time = time
+
                         utilities.close(dongle)
                         
                         # Register and Tare Sensors
@@ -340,11 +341,13 @@ try:
                     
                     # Signal drop reconnect
                     try:
-                        student_tup = (student_tup[0], student_tup[2], student_tup[1])
+                        test_index = student_tup[0]
+                        
                     except TypeError:
                         student_tup = (0,0,0)
                         print("Student read failed")
-                        
+                        drop_start_time = time
+
                         utilities.close(dongle)
                         
                         # Register and Tare Sensors
@@ -365,12 +368,18 @@ try:
     
                 # Select haptics direction
                 index = utilities.getIndex(difference_tup, tolerance)
-    
+                
                 # Play haptics, return values for recording
                 angle, raw_intensity, commandTime = utilities.advancedPlay(
                     index, difference_tup, start, commandTime, iteration,
                     connection, teacher_intensity, student_intensity, training_mode)
-    
+                
+                # Invert y and z angles to switch x and y directions in window
+                student_tup = (student_tup[0], student_tup[2], student_tup[1])
+                
+                if not isTest and training_mode != 1: 
+                    teacher_tup = (teacher_tup[0], teacher_tup[2], teacher_tup[1])
+                
                 # Move ball
                 utilities.positionMove(window, bounds,
                                        max_movement_angle, ball, teacher_tup,
@@ -431,7 +440,7 @@ try:
                 # print("Signal strength: {}".format(dongle.getSignalStrength()))
                 time = perf_counter() - start - intermission_time - reconnect_time
                 
-                print(time)
+                # print(time)
                 
                 utilities.writeData(file, time, teacher_tup, student_tup,
                                     difference_tup, raw_intensity,
@@ -454,8 +463,8 @@ except KeyboardInterrupt:
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
 # # Setup incomplete
-except NameError:
-    print('\nSetup incomplete')
+# except NameError:
+#     print('\nSetup incomplete')
 
 # Forgot to close the CSV file
 except PermissionError:

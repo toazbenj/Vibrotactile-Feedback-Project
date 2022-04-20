@@ -246,7 +246,7 @@ def getIndex(difference_tup, tolerance):
     return index
 
 
-def getSharing(round_type, round_lst, mode=1, rounds=0, isAuto=True):
+def getSharing(isTest, round_lst, mode=1, rounds=0, isAuto=True):
     
     """
     Receive/calculate the amount of cursor control and intensity for
@@ -257,14 +257,14 @@ def getSharing(round_type, round_lst, mode=1, rounds=0, isAuto=True):
     round_control_dict = {0:0.1, 1:0.25, 2:0.50, 3:0.75, 4:0.90}
         
     # No Teacher, No Haptics
-    if round_type == 1 or round_type == 3 or mode == 1:
+    if mode == 1 or isTest:
         teacher_control = 0
         student_control = 1
         teacher_intensity = 0
         student_intensity = 0
 
     # Teacher, No Haptics
-    elif round_type == 2 and mode == 2:
+    elif not isTest and mode == 2:
         if isAuto and mode == 2:
             student_control = round_control_dict[rounds-round_lst[0]]
             teacher_control = 1-student_control
@@ -284,7 +284,7 @@ def getSharing(round_type, round_lst, mode=1, rounds=0, isAuto=True):
             teacher_intensity = 0
 
     #  Teacher, Haptics
-    else:
+    elif not isTest and mode == 3:
         if isAuto:
 
             student_control = round_control_dict[rounds-round_lst[0]]
