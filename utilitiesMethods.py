@@ -312,9 +312,8 @@ def getDevices(mode=1, isAuto=True, teacher_sensor=1, student_sensor=4):
     Search for docked devices, make list, assign names and orientation,
     display battery levels, tare countdown, return devices
     """
-    # Move slot selected within dongle to make room for other projects
-    # Slots 0-4 for robot project, 5-7 for vibrotactile feedback
-    offset = 5
+
+    offset = 0
 
     device_list = ts_api.getComPorts()
     com_port, friendly_name, device_type = device_list[0]

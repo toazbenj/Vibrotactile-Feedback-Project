@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isEasyMode = True
+isEasyMode = False
 
 time = 0
 target_time = 0
@@ -200,7 +200,7 @@ try:
         
         # For testing
         if isEasyMode:
-            print(rounds + 1, isTest)
+            print("Round: {}, Testing: {}".format(rounds + 1, isTest))
         
         # Generates random list of rotation angles
         rand_lst = []
@@ -443,9 +443,9 @@ try:
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# Note: the following except statements handle common errors that occur when 
-# the program runs properly but user error causes issues. If problem persists,
-# comment out except clauses to see the actual error
+# # Note: the following except statements handle common errors that occur when 
+# # the program runs properly but user error causes issues. If problem persists,
+# # comment out except clauses to see the actual error
 
 # For manual shutdown
 except KeyboardInterrupt:
@@ -453,29 +453,32 @@ except KeyboardInterrupt:
     print('\nYour time is {}.'.format(round(time, 2)))
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
-# Setup incomplete
+# # Setup incomplete
 except NameError:
-    print('Setup incomplete')
+    print('\nSetup incomplete')
 
 # Forgot to close the CSV file
 except PermissionError:
-    print('Close CSV File')
+    print('\nClose CSV File')
 
 # Motion sensors not on or need to be charged
 except AttributeError:
-    print('Turn on motion sensors')
+    print('\nTurn on motion sensors')
 
 # # Dongle wasn't closed properly or open in another program
 except serial.SerialException:
-    print('Refresh kernal or check dongle connection')
+    print('\nRefresh kernal or check dongle connection')
 
 # Client connection needs to refresh
 except OSError:
-    print('Run again to refresh client connection')
+    print('\nRun again to refresh client connection')
 
 # No matter what, close peripherals
 finally:
-    if training_mode == 3:
-        connection.close()
-    window.close()
-    utilities.close(dongle)
+    try:
+        if training_mode == 3:
+            connection.close()
+        window.close()
+        utilities.close(dongle)
+    except:
+        pass
