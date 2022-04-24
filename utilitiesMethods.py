@@ -266,6 +266,9 @@ def getSharing(isTest, round_lst, mode=1, rounds=0, isAuto=True):
     # Teacher, No Haptics
     elif not isTest and mode == 2:
         if isAuto and mode == 2:
+            
+            print(rounds-round_lst[0])
+            
             student_control = round_control_dict[rounds-round_lst[0]]
             teacher_control = 1-student_control
     
@@ -287,9 +290,12 @@ def getSharing(isTest, round_lst, mode=1, rounds=0, isAuto=True):
     elif not isTest and mode == 3:
         if isAuto:
 
+            print(rounds-round_lst[0])
+            
+
             student_control = round_control_dict[rounds-round_lst[0]]
             teacher_control = 1-student_control
-    
+            
             # Amount of intensity is inverse of amount of control
             student_intensity = teacher_control
             teacher_intensity = student_control

@@ -72,7 +72,7 @@ import socket
 
 # Graphics/Gaming
 isAuto = True
-isEasyMode = False
+isEasyMode = True
 
 time = 0
 target_time = 0
