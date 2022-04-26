@@ -119,7 +119,8 @@ intermission_time = 0
 # Pre Game start setup
 try:
     # Get blocks, units and training mode
-    parameters_lst, units_lst, blocks_lst= utilities.getAutoSetup()
+    parameters_lst, units_lst, blocks_lst, round_control_lst = utilities.getAutoSetup()
+    isGraduated = round_control_lst[0]
     
     # Device setup
     training_mode = parameters_lst[0]
@@ -190,23 +191,44 @@ try:
     # Pause before start
     intermission_time += utilities.intermission(time, window)
 
-    
+
     # Main loop, iterate through each round
     rounds = 0
-    for index in range(len(units_lst)):
-        for block in range(blocks_lst[index]):
-            for unit in range(units_lst[index]):
-                rounds += 1
-                print(rounds)
+    for master_index in range(len(units_lst)):
+        # Pause for break in between testing and training blocks
+        intermission_time += utilities.intermission(time, window)
         
+        if isEasyMode:
+            print()
+            
+        for block in range(blocks_lst[master_index]):
+
+            if not isGraduated:
+                isTest = utilities.getRoundType(rounds, round_lst)
+                teacher_control, student_control, teacher_intensity, student_intensity\
+                    = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
+                                 blocks_lst, block, master_index, training_mode, rounds, isAuto)
+            
+            for unit in range(units_lst[master_index]):
+                isTest = utilities.getRoundType(rounds, round_lst)        
+                
+
+                if isGraduated:
+                    teacher_control, student_control, teacher_intensity, student_intensity\
+                        = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
+                                     blocks_lst, block, master_index, training_mode, rounds, isAuto)
+                
+                if isEasyMode:
+                    print(student_control)
+                
                 # Pre round setup
                 # Find which type of target sequence is being fielded
                 
                 isTest = utilities.getRoundType(rounds, round_lst)
                 
                 # For testing
-                if isEasyMode:
-                    print("Round: {}, Testing: {}".format(rounds + 1, isTest))
+                # if isEasyMode:
+                #     print("Round: {}, Testing: {}".format(rounds + 1, isTest))
                 
                 # Generates random list of rotation angles
                 rand_lst = []
@@ -249,17 +271,6 @@ try:
                     
                 rand_lst.append(0)
                 
-                # Control and intensity ratios
-                teacher_control, student_control, teacher_intensity, student_intensity \
-                    = utilities.getSharing(isTest, round_lst, training_mode, rounds, isAuto)
-        
-                # Pause for break in between testing and training blocks
-                if rounds in pause_sentinel_lst:
-                    intermission_time += utilities.intermission(time, window)
-                    
-                    if isEasyMode:
-                        print()
-                    
                 time = perf_counter() - start - intermission_time - reconnect_time
         
                 target_count = 1
@@ -428,10 +439,15 @@ try:
                                                     isTest, isFollowMe)
                                 
                                 if isEasyMode:
-                                    print('Target {}'.format(target_count))
+                                    # print('Target {}'.format(target_count))
+                                    pass
                                 
                                 # Exit move loop
                                 target_count += 1
+                                
+                                # If last target in round increase round count
+                                if rand_lst.index(i) == len(rand_lst) -1:
+                                    rounds += 1
                                 break
                                 
                         # Reset when target overshot
@@ -453,6 +469,7 @@ try:
                                             teacher_intensity, student_intensity, 
                                             angle, score, target_time, ball, target,
                                             training_mode, isTest, isFollowMe)
+                rounds += 1
                 
     # Display Results
     print('\nYour time is {}.'.format(round(time, 2)))
