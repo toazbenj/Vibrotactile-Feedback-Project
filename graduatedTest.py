@@ -89,9 +89,9 @@ def getSharing(isTest, round_lst, round_control_lst, units_lst, blocks_lst, bloc
             
         else:
             
-            key = userInput('Enter student control proportion(%)>>')
-            student_control = float(key)*0.01
-            teacher_control = 1-student_control
+            # key = userInput('Enter student control proportion(%)>>')
+            # student_control = float(key)*0.01
+            # teacher_control = 1-student_control
     
             # No haptics
             student_intensity = 0
@@ -109,9 +109,9 @@ def getSharing(isTest, round_lst, round_control_lst, units_lst, blocks_lst, bloc
             teacher_intensity = student_control
         
         else:
-            key = userInput('Enter student control proportion(%)>>')
-            student_control = float(key)*0.01
-            teacher_control = 1-student_control
+            # key = userInput('Enter student control proportion(%)>>')
+            # student_control = float(key)*0.01
+            # teacher_control = 1-student_control
     
             # Amount of intensity is inverse of amount of control
             student_intensity = teacher_control
@@ -179,49 +179,49 @@ def getAutoSetup():
 
 
 # Main
-
-isTest = False
-isAuto = True
-mode = 3
-
-# Get blocks, units and training mode
-parameters_lst, units_lst, blocks_lst, round_control_lst = getAutoSetup()
-
-# Device setup
-training_mode = parameters_lst[0]
-teacher_sensor = parameters_lst[1]
-student_sensor = parameters_lst[2]
-file = parameters_lst[3]
-
-
-
-# Calculate number of each type of rounds
-pretest_rounds = units_lst[0] * blocks_lst[0]
-training_one_rounds = units_lst[1] * blocks_lst[1]
-midtest_rounds = units_lst[2] * blocks_lst[2]
-training_two_rounds = units_lst[3] * blocks_lst[3]
-posttest_rounds = units_lst[4] * blocks_lst[4]
-
-round_lst = [pretest_rounds, training_one_rounds, midtest_rounds, 
-             training_two_rounds, posttest_rounds]
-
-block_count = 0
-for rounds in range(sum(round_lst)):
-    isTest = utilities.getRoundType(rounds, round_lst)
+def main():
+    isTest = False
+    isAuto = True
+    mode = 3
     
-    if isTest:
-        block_count += round(1/units_lst[0],2)
+    # Get blocks, units and training mode
+    parameters_lst, units_lst, blocks_lst, round_control_lst = getAutoSetup()
+    
+    # Device setup
+    training_mode = parameters_lst[0]
+    teacher_sensor = parameters_lst[1]
+    student_sensor = parameters_lst[2]
+    file = parameters_lst[3]
+    
+    
+    
+    # Calculate number of each type of rounds
+    pretest_rounds = units_lst[0] * blocks_lst[0]
+    training_one_rounds = units_lst[1] * blocks_lst[1]
+    midtest_rounds = units_lst[2] * blocks_lst[2]
+    training_two_rounds = units_lst[3] * blocks_lst[3]
+    posttest_rounds = units_lst[4] * blocks_lst[4]
+    
+    round_lst = [pretest_rounds, training_one_rounds, midtest_rounds, 
+                 training_two_rounds, posttest_rounds]
+    
+    block_count = 0
+    for rounds in range(sum(round_lst)):
+        isTest = utilities.getRoundType(rounds, round_lst)
         
-    else:
-        # print((rounds - round_lst[0]))
-        # if (rounds - round_lst[0]) % (units_lst[1]-1) == 0 or (rounds - sum(round_lst[0:3])) % (units_lst[3]-1) == 0:
-        #     block_count += 1
-        block_count += round(1/units_lst[1],2)
+        if isTest:
+            block_count += round(1/units_lst[0],2)
+            
+        else:
+            # print((rounds - round_lst[0]))
+            # if (rounds - round_lst[0]) % (units_lst[1]-1) == 0 or (rounds - sum(round_lst[0:3])) % (units_lst[3]-1) == 0:
+            #     block_count += 1
+            block_count += round(1/units_lst[1],2)
+        
+        block_count = round(block_count,3)
+        # print(isTest, block_count)
+        teacher_control, student_control, teacher_intensity, student_intensity \
+            = getSharing(isTest, round_lst, round_control_lst, units_lst, blocks_lst, block_count, mode, rounds, isAuto)
     
-    block_count = round(block_count,3)
-    # print(isTest, block_count)
-    teacher_control, student_control, teacher_intensity, student_intensity \
-        = getSharing(isTest, round_lst, round_control_lst, units_lst, blocks_lst, block_count, mode, rounds, isAuto)
-
-    print(student_control)
-
+        print(student_control)
+    
