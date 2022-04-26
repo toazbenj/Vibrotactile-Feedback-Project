@@ -119,7 +119,8 @@ intermission_time = 0
 # Pre Game start setup
 try:
     # Get blocks, units and training mode
-    parameters_lst, units_lst, blocks_lst= utilities.getAutoSetup()
+    parameters_lst, units_lst, blocks_lst, round_control_lst = utilities.getAutoSetup()
+    isGraduated = round_control_lst[0]
     
     # Device setup
     training_mode = parameters_lst[0]
@@ -194,10 +195,28 @@ try:
     # Main loop, iterate through each round
     rounds = 0
     for index in range(len(units_lst)):
+        print()
+        
         for block in range(blocks_lst[index]):
+            print()
+            # round_control_dict = getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst)
+
+            if not isGraduated:
+                isTest = utilities.getRoundType(rounds, round_lst)
+                teacher_control, student_control, teacher_intensity, student_intensity\
+                    = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
+                                 blocks_lst, block, index, training_mode, rounds, isAuto)
+            
             for unit in range(units_lst[index]):
+                isTest = utilities.getRoundType(rounds, round_lst)        
+                
+                if isGraduated:
+                    teacher_control, student_control, teacher_intensity, student_intensity\
+                        = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
+                                     blocks_lst, block, index, training_mode, rounds, isAuto)
+                
+                print(student_control)
                 rounds += 1
-                print(rounds)
         
                 # Pre round setup
                 # Find which type of target sequence is being fielded
