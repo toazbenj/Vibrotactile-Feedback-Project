@@ -305,6 +305,7 @@ def getSharing(round_control_dict, isTest, round_lst, round_control_lst, units_l
     isGraduated = round_control_lst[0]
 
     round_control_dict = getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst)
+    # print(round_control_dict)
     
     # No Teacher, No Haptics
     if mode == 1 or isTest:
@@ -619,7 +620,7 @@ def close(device):
 
 def writeData(file, time, teacher_tup, student_tup, difference_tup,
               raw_intensity, teacher_intensity, student_intensity,
-              angle, score, target_time, ball, target,  training_mode,
+              angle, score, target_time, ball, target, target_number, training_mode,
               round_type, isFollowMe):
     """
     Take timestamp, position data, haptics data, write to csv file. Overloaded
@@ -674,9 +675,11 @@ def writeData(file, time, teacher_tup, student_tup, difference_tup,
                                 str(round(ball.y_center)),
                                 str(round(target.x_center)),
                                 str(round(target.y_center)),
+                                str(target_number),
                                 str(score),
                                 str(round(target_time, 3)), str(training_mode),
                                 str(round_type)])
+
 
 # Currently not in use, made for test programs
 def testPos(pos_tup1, pos_tup2, tolerance=0):

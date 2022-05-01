@@ -33,9 +33,10 @@ rvs_haptic_dict = {'d': "MoveLeft", 'a': 'MoveRight', 's': "MoveForward",
 
 try:
     # Initialize host and port
-    host = "35.12.209.154"
+    host = "35.22.115.93"
     
-    port = 8080
+    # port = 8080
+    port = 57816
     
     # Bind socket with port and host
     s = socket.socket()

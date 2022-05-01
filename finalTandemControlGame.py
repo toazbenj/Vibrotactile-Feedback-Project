@@ -93,6 +93,8 @@ max_score = 100
 
 training_lst = [2*pi, pi/4, pi/2, 3*pi/4, pi, 5*pi/4, 3*pi/2, 7*pi/4]
 testing_lst = [2*pi, pi/2, pi, 3*pi/2]
+target_number_dict = {0:0, pi/4:1, pi/2:6, 3*pi/4:3, pi:4, 5*pi/4:5, 3*pi/2:2,
+                      7*pi/4:7, 2*pi:8}
 
 bounds = 600
 radius = 3/10*bounds
@@ -112,7 +114,8 @@ header = ['Time', 'Teacher-x', 'Teacher-y', 'Teacher-z', 'Student-x',
           'Student-y', 'Student-z', 'Difference-x', 'Difference-y',
           'Difference-z', 'Teacher Intensity', 'Student Intensity',
           'Angle Teacher', 'Angle Student', 'Ball-x', 'Ball-y', 'Target-x',
-          'Target-y', 'Score','Target Duration', 'Training Mode', 'Is Testing Boolean']
+          'Target-y', 'Target Number', 'Score','Target Duration', 
+          'Training Mode', 'Is Testing Boolean']
 isFollowMe = False
 intermission_time = 0
 
@@ -278,7 +281,8 @@ try:
                 # Iterate through each target attempt
                 for i in rand_lst:
                     # Make target
-                    
+                    target_number = target_number_dict[i]
+                    print(target_number)
                     # Reach target
                     if i != 0:
                         x_coord = bounds * (1/2) + radius * (cos(i))
@@ -436,7 +440,7 @@ try:
                                                     difference_tup, raw_intensity,
                                                     teacher_intensity, student_intensity, 
                                                     angle, score, target_time, ball,
-                                                    target, training_mode,
+                                                    target, target_number, training_mode,
                                                     isTest, isFollowMe)
                                 
                                 if isEasyMode:
@@ -468,7 +472,7 @@ try:
                         utilities.writeData(file, time, teacher_tup, student_tup,
                                             difference_tup, raw_intensity,
                                             teacher_intensity, student_intensity, 
-                                            angle, score, target_time, ball, target,
+                                            angle, score, target_time, ball, target, target_number,
                                             training_mode, isTest, isFollowMe)
                 rounds += 1
                 
@@ -487,8 +491,8 @@ except KeyboardInterrupt:
     print('\nYour score is {} out of {}.'.format(score, (overall_score)))
 
 # # Setup incomplete
-# except NameError:
-#     print('\nSetup incomplete')
+except NameError:
+    print('\nSetup incomplete')
 
 # Forgot to close the CSV file
 except PermissionError:
