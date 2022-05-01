@@ -141,10 +141,6 @@ try:
     round_lst = [pretest_rounds, training_one_rounds, midtest_rounds, 
                  training_two_rounds, posttest_rounds]
     
-    # Round numbers after which block gaps occur
-    pause_sentinel_lst = [sum(round_lst[0:1])-1, sum(round_lst[0:2])-1, 
-                          sum(round_lst[0:3])-1, sum(round_lst[0:4])-1]
-    
     overall_score = 100 * (16 * (
         pretest_rounds + posttest_rounds + midtest_rounds) + 
         8 * (training_one_rounds + training_two_rounds))
@@ -211,11 +207,13 @@ try:
                 teacher_control, student_control, teacher_intensity, student_intensity\
                     = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
                                  blocks_lst, block, master_index, training_mode, rounds, isAuto)
-            
+           
+            if isEasyMode:
+                print()
+                
             for unit in range(units_lst[master_index]):
                 isTest = utilities.getRoundType(rounds, round_lst)        
                 
-
                 if isGraduated:
                     teacher_control, student_control, teacher_intensity, student_intensity\
                         = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
@@ -281,7 +279,6 @@ try:
                 for i in rand_lst:
                     # Make target
                     target_number = target_number_dict[i]
-                    print(target_number)
                     # Reach target
                     if i != 0:
                         x_coord = bounds * (1/2) + radius * (cos(i))

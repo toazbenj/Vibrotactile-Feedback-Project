@@ -248,48 +248,11 @@ def getIndex(difference_tup, tolerance):
 
 def getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst):
     """ Generate dictionary of student control values for training"""
-    isGraduated = round_control_lst[0]
-    # Increased control for student after each unit (target sequence)
-    if isGraduated:
-        # Training 1 number of units in a block
-        if rounds < sum(round_lst[0:2]):
-            units = round_lst[1]/blocks_lst[1]
-        
-        # Training 2
-        else:
-            units = round_lst[3]/blocks_lst[3]
-            
-        start  = int(10 * round_control_lst[1])
-        stop = int(10 * round_control_lst[2])
-        interval = int((stop-start)/(units-1))
-        stop += 1
-        
-        count = 0
-        round_control_dict = {}
-        for i in range(start, stop, interval):
-            round_control_dict[count] = i/10
-            count += 1
-            
-    # Increased student control after each block
-    else:
-        # Training 1 blocks
-        if rounds < sum(round_lst[0:2]):
-            units = blocks_lst[1]
-        
-        # Training 2
-        else:
-            units = blocks_lst[3]
-            
-        start = int(100 * round_control_lst[1])
-        stop = int(100 * round_control_lst[2])
-        interval = int((stop-start)/(units-1))
-        stop += 1
-        
-        count = 0
-        round_control_dict = {}
-        for i in range(start, stop, interval):
-            round_control_dict[count] = i/100
-            count += 1
+    count = 0
+    round_control_dict = {}
+    for i in round_control_lst[1:]:
+        round_control_dict[count] = i
+        count += 1
         
         # print(round_control_dict)
     return round_control_dict
