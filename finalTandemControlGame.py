@@ -194,39 +194,12 @@ try:
     # Pause before start
     intermission_time += utilities.intermission(time, window)
 
-
     # Main loop, iterate through each round
     rounds = 0
-<<<<<<< HEAD
 
     for master_index in range(len(units_lst)):
         # Pause for break in between testing and training blocks
         intermission_time += utilities.intermission(time, window)
-=======
-    for index in range(len(units_lst)):
-        print()
-        
-        for block in range(blocks_lst[index]):
-            print()
-            # round_control_dict = getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst)
-
-            if not isGraduated:
-                isTest = utilities.getRoundType(rounds, round_lst)
-                teacher_control, student_control, teacher_intensity, student_intensity\
-                    = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
-                                 blocks_lst, block, index, training_mode, rounds, isAuto)
-            
-            for unit in range(units_lst[index]):
-                isTest = utilities.getRoundType(rounds, round_lst)        
-                
-                if isGraduated:
-                    teacher_control, student_control, teacher_intensity, student_intensity\
-                        = utilities.getSharing(rounds, isTest, round_lst, round_control_lst, units_lst,
-                                     blocks_lst, block, index, training_mode, rounds, isAuto)
-                
-                print(student_control)
-                rounds += 1
->>>>>>> 516609a0580ddccf6a3c202ec38913966dcb5695
         
         if isEasyMode:
             print()

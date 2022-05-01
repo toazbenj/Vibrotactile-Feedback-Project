@@ -305,10 +305,7 @@ def getSharing(round_control_dict, isTest, round_lst, round_control_lst, units_l
     isGraduated = round_control_lst[0]
 
     round_control_dict = getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst)
-<<<<<<< HEAD
     # print(round_control_dict)
-=======
->>>>>>> 516609a0580ddccf6a3c202ec38913966dcb5695
     
     # No Teacher, No Haptics
     if mode == 1 or isTest:
