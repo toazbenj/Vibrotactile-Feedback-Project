@@ -92,8 +92,9 @@ isEasyMode = False
 # Time
 time = 0
 target_time = 0
+target_achieved_interval = 0.5
 previous_target_time = 0
-target_achieved_start = 0
+target_achieved_start_time = 0
 reconnect_time = 0
 intermission_time = 0
 
@@ -138,6 +139,7 @@ try:
     teacher_number = parameters_lst[1]
     student_number = parameters_lst[2]
     file = parameters_lst[3]
+    isSecondComputer = parameters_lst[4]
 
     # Calculate number of each type of rounds
     pretest_rounds = sequence_lst[0] * blocks_lst[0]
@@ -153,7 +155,7 @@ try:
         pretest_rounds + posttest_rounds + midtest_rounds) +
         8 * (training_one_rounds + training_two_rounds))
 
-    if training_mode == 3:
+    if training_mode == 3 and isSecondComputer:
         # Link to 2nd computer
         socket = socket.socket()
         port = 8080
@@ -381,7 +383,8 @@ try:
                                                    connection,
                                                    teacher_intensity,
                                                    student_intensity,
-                                                   training_mode)
+                                                   training_mode,
+                                                   isSecondComputer)
 
                         # Invert y and z angles to switch x and y for ball
                         student_tup = (student_tup[0], student_tup[2],
@@ -402,17 +405,23 @@ try:
                         x_diff = abs(ball.getCenter().x-target.getCenter().x)
                         y_diff = abs(ball.getCenter().y-target.getCenter().y)
 
+                        time = (perf_counter() - start_time -
+                                intermission_time - reconnect_time)
+
                         if x_diff < target_miss_margin and \
                                 y_diff < target_miss_margin:
 
                             target.setOutline('green')
+                            time = (perf_counter() - start_time -
+                                    intermission_time - reconnect_time)
 
                             # First hit
-                            if target_achieved_start == 0:
+                            if target_achieved_start_time == 0:
                                 target_achieved_start_time = time
 
                             # Kept within target
-                            elif time - target_achieved_start_time > 0.5:
+                            elif time - target_achieved_start_time\
+                                    > target_achieved_interval:
 
                                 target.undraw()
                                 score_text.undraw()
@@ -420,7 +429,7 @@ try:
                                 # Calculate time taken and score for attempt
                                 target_time = time - previous_target_time
                                 round_score, score_text = \
-                                    utilities.displayScore(bounds, window,
+                                    utilities.displayScore(window,
                                                            target_time,
                                                            max_score)
 
@@ -452,6 +461,8 @@ try:
                                 # If last target in round increase round count
                                 if angle_lst.index(i) == len(angle_lst) - 1:
                                     rounds += 1
+
+                                # Exit target loop
                                 break
 
                         # Reset when target overshot
@@ -507,6 +518,10 @@ except serial.SerialException:
 # Client connection needs to refresh
 except OSError:
     print('\nRun again to refresh client connection')
+
+except KeyError:
+    print('\nCheck that student control values in control file match number',
+          'of rounds/blocks')
 
 # No matter what, close peripherals
 finally:

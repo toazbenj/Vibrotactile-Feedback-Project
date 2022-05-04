@@ -163,8 +163,8 @@ def getDevices(training_mode=1, teacher_number=1, student_number=4):
     dng_device = ts_api.TSDongle(com_port=com_port)
 
     # Key is order listed in dongle settings, values are devices
-    device_dict = {1: dng_device[0], 3: dng_device[1],
-                   4: dng_device[2]}
+    device_dict = {1: dng_device[0], 2: dng_device[1], 3: dng_device[2],
+                   4: dng_device[3]}
 
     # No teacher, no haptics
     if training_mode == 1:
@@ -230,7 +230,7 @@ def getAutoSetup():
     sequence
     '''
 
-    file = 'controlFile.csv'
+    file = 'controlFile2.csv'
     parameters_lst = []
     sequence_lst = []
     blocks_lst = []
@@ -436,7 +436,7 @@ def play(haptic_index='w', intensity=1, duration=0.5, haptic_iteration=4):
 
     # Find indicated motion
     if haptic_index in haptic_dict:
-        print('\n'+haptic_dict[haptic_index]+'\n')
+        # print('\n'+haptic_dict[haptic_index]+'\n')
 
         # Adjust haptics in real time
         player.submit_registered_with_option(
@@ -447,7 +447,7 @@ def play(haptic_index='w', intensity=1, duration=0.5, haptic_iteration=4):
 
 def advancedPlay(haptic_index, difference_tup, start_time, haptic_interval,
                  haptic_iteration, connection, teacher_intensity,
-                 student_intensity, training_mode):
+                 student_intensity, training_mode, isSecondComputer):
     """
     Scale haptic intensity, maintain time between buzzes, return values
     for recording, send index and intesity to teacher client.
@@ -483,7 +483,7 @@ def advancedPlay(haptic_index, difference_tup, start_time, haptic_interval,
                  haptic_iteration=haptic_iteration)
 
             # Generate command, send to client
-            if training_mode == 3:
+            if training_mode == 3 and isSecondComputer:
                 command = str(teacher_intensity)+'-'+str(haptic_index)+'-'+str(
                     raw_intensity)
 
@@ -502,6 +502,8 @@ def advancedPlay(haptic_index, difference_tup, start_time, haptic_interval,
 
 def getIndex(difference_tup, haptic_tolerance):
     """Select index for given direction moved beyond tolerance."""
+
+    haptic_index = ''
 
     # Forward Left (-y difference and -z differnce)
     if difference_tup[1] <= -haptic_tolerance and\
