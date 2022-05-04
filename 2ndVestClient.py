@@ -69,7 +69,7 @@ try:
             teacher_intensity = float(command[2])
 
             # Play teacher haptics
-            utility.play(index=rvs_index_dict[index],
+            utility.play(haptic_index=rvs_index_dict[index],
                          intensity=raw_intensity*teacher_intensity)
 
     # Server ends program
