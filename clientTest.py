@@ -15,7 +15,7 @@ import os
 s = socket.socket()
  
 # Initialize the host
-host = "35.20.240.53"
+host = "35.12.209.58"
  
 # Initialize the port
 port = 8080
