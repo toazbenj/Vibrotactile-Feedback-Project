@@ -47,7 +47,7 @@ def initialize():
         x = threading.Thread(target=thread_function, args=(1,))
         x.start()
     except:
-        print("Couldn't connect")
+        print("Haptics not connected")
         return
 
 

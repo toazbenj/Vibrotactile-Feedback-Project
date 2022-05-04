@@ -7,8 +7,19 @@ Created on Thu Apr 21 14:34:52 2022
 import csv
 import utilitiesMethods as utilities
 
-
 def getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst):
+    """ Generate dictionary of student control values for training"""
+    count = 0
+    round_control_dict = {}
+    for i in round_control_lst[1:]:
+        round_control_dict[count] = i
+        count += 1
+        
+        # print(round_control_dict)
+    return round_control_dict
+
+
+def getControl1(rounds, round_lst, round_control_lst, units_lst, blocks_lst):
     """ Generate dictionary of student control values for training"""
     isGraduated = round_control_lst[0]
     # Increased control for student after each unit (target sequence)
@@ -169,63 +180,7 @@ def getAutoSetup():
             round_control_lst.append(float(i))
     
     return parameters_lst, units_lst, blocks_lst, round_control_lst
-    '''Reads control file, gathers number of rounds and mode for each target sequence'''
-    file = 'controlFile2.csv'
-    parameters_lst = []
-    units_lst = []
-    blocks_lst = []
-    round_control_lst = []
-    
-    # Open data file, write header
-    with open(file, 'r', newline='') as csvfile:
-        csvreader = csv.reader(csvfile)
-        
-        # 1st line of parameters, skip header lines
-        next(csvreader)
-        next(csvreader)
-        parameters = next(csvreader)
-        
-        # 2nd line of units
-        next(csvreader)
-        next(csvreader)
-        next(csvreader)
-        units = next(csvreader)
-        
-        # 3rd line of blocks
-        next(csvreader)
-        next(csvreader)
-        next(csvreader)
-        blocks = next(csvreader)
-        
-        # 4th line of Training Round Control Values
-        next(csvreader)
-        next(csvreader)
-        next(csvreader)
-        controls = next(csvreader)
-    
-    for i in parameters:
-        if i != "":
-            try:
-                parameters_lst.append(int(i))
-            except ValueError:
-                parameters_lst.append(i)
-        
-    for i in units:
-        if i != "":
-            units_lst.append(int(i))
-       
-    for i in blocks:
-        if i != "":
-            blocks_lst.append(int(i))
-            
-    for i in controls:
-        if i != "":
-            round_control_lst.append(float(i))
-    
-    return parameters_lst, units_lst, blocks_lst, round_control_lst
-        
-
-
+   
 # Main
 isAuto = True
 
