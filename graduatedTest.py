@@ -7,8 +7,19 @@ Created on Thu Apr 21 14:34:52 2022
 import csv
 import utilitiesMethods as utilities
 
-
 def getControl(rounds, round_lst, round_control_lst, units_lst, blocks_lst):
+    """ Generate dictionary of student control values for training"""
+    count = 0
+    round_control_dict = {}
+    for i in round_control_lst[1:]:
+        round_control_dict[count] = i
+        count += 1
+        
+        # print(round_control_dict)
+    return round_control_dict
+
+
+def getControl1(rounds, round_lst, round_control_lst, units_lst, blocks_lst):
     """ Generate dictionary of student control values for training"""
     isGraduated = round_control_lst[0]
     # Increased control for student after each unit (target sequence)
