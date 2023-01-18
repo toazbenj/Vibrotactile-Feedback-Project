@@ -1,4 +1,4 @@
-# vibrotactileFeedbackProject
+# Vibrotactile Feedback Project
 Haptic Vest and Motion Sensor Interface
 
 Description
