@@ -1,6 +1,9 @@
 # Vibrotactile Feedback Project
 Haptic Vest and Motion Sensor Interface
 
+
+
+
 Description
 
 This set of programs was made to enable the user to take euler angle position data from YOST Labs 3-space sensors to calculate the relative positions of two subjects.
@@ -14,4 +17,4 @@ targets in the time allowed. Conrol of the ball is done by bending the upper bod
 
 Support
 
-More information on the IMU API can be found at https://yostlabs.com/3-space-application-programming-interface/. Within this repository are the TACT haptics files accessed by the programs to activate the motors of the Tactsuits in proper sequence. These were made using the free development resource at https://designer.bhaptics.com/. bHaptics Device Player is needed to connect to the Tactsuits, though the programs can run without error while the suits are not connected for testing purposes. See https://www.bhaptics.com/support/downloads. Both programs were written to be used with a bluetooth dongle and 2 YOST Labs IMU sensors. Their serial numbers must be committed to the dongle using the YOSH Labs 3-Space Suit application before they can be referenced within the program. Download at https://yostlabs.com/yost-labs-3-space-sensor-software-suite/. Information on setup and operation is included in the Tandem Control Game Setup document. These programs work best when used with python 3.8.5 or later.
+More information on the IMU API can be found at https://yostlabs.com/3-space-application-programming-interface/. Within this repository are the TACT haptics files accessed by the programs to activate the motors of the Tactsuits in proper sequence. These were made using the free development resource at https://designer.bhaptics.com/. bHaptics Device Player is needed to connect to the Tactsuits, though the programs can run without error while the suits are not connected for testing purposes. See https://www.bhaptics.com/support/downloads. Both programs were written to be used with a bluetooth dongle and 2 YOST Labs IMU sensors. Their serial numbers must be committed to the dongle using the YOST Labs 3-Space Suit application before they can be referenced within the program. Download at https://yostlabs.com/yost-labs-3-space-sensor-software-suite/. Information on setup and operation is included in the Tandem Control Game Setup document. These programs work best when used with python 3.8.5 or later.
