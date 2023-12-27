@@ -1,9 +1,10 @@
 # Vibrotactile Feedback Project
 Haptic Vest and Motion Sensor Interface
 
-<p align="center">
-<img width="700" alt="image" src="https://github.com/toazbenj/Vibrotactile-Feedback-Project/assets/90994176/37d5f41a-0f9f-45f0-a2a2-4951626bef8b">
-</p>
+
+![bhaptics](https://github.com/toazbenj/Vibrotactile-Feedback-Project/assets/90994176/2dd1d1f2-bb7b-43d1-8375-138a39e7c8e1)
+
+
 
 Description
 
