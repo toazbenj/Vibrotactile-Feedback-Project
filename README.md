@@ -15,7 +15,7 @@ position as the first subject, the teacher, without being able to see them. The 
 Programs
 
 The relevent programs for this project are finalTandemControlGame and 2ndVestClient. finalTandemControlGame creates a graphics window that allows the subjects to jointly control a ball object to guide it through a series of targets. The better in sync both subjects are, the more effectively they will be able to hit the 
-targets in the time allowed. Conrol of the ball is done by bending the upper body in the four cardinal directions, but the x and y coordinates are reversed within the program, forcing the participants to adapt. Haptics are employed to help guide a less experienced participant using the movements of a seasoned player. In order to run individualized haptics on the teacher's vest, 2ndVestClient is run on a separate computer with the respective vest connected to a second bHaptics Player program.
+targets in the time allowed. Control of the ball is done by bending the upper body in the four cardinal directions, but the x and y coordinates are reversed within the program, forcing the participants to adapt. Haptics are employed to help guide a less experienced participant using the movements of a seasoned player. In order to run individualized haptics on the teacher's vest, 2ndVestClient is run on a separate computer with the respective vest connected to a second bHaptics Player program.
 
 Support
 
